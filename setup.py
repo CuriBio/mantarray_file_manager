@@ -5,10 +5,10 @@ from setuptools import setup
 
 
 setup(
-    name="change_this_to_name_of_package",
+    name="mantarray_file_manager",
     version="0.1",
     description="CREATE A DESCRIPTION",
-    url="https://github.com/CuriBio/CHANGE_THIS_TO_NAME_OF_REPO",
+    url="https://github.com/CuriBio/mantarray_file_manager",
     author="Curi Bio",
     author_email="contact@curibio.com",
     license="MIT",
