@@ -20,7 +20,7 @@ from typing import List
 
 # -- Project information -----------------------------------------------------
 
-project = "CHANGE_THIS_TO_NAME_OF_PACKAGE"
+project = "Mantarray File Manager"
 copyright = "2020, Curi Bio"  # pylint: disable=redefined-builtin
 author = "Curi Bio"
 
@@ -35,7 +35,11 @@ release = "0.1"
 # ones.
 
 
-extensions: List[str] = ["sphinx.ext.napoleon"]
+extensions: List[str] = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.napoleon",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path: List[str] = []

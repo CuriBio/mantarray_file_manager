@@ -1,1 +1,5 @@
 # pip install -r requirements.txt
+
+h5py==2.10.0
+nptyping==1.2.0
+numpy==1.19.0
