@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Curi Bio's Mantarray File Manager documentation!
-==========================================================
+============================================================
 
 
 Welcome to Curi Bio's File Manager! This tool will allow you to parse through
