@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Constants for the Curibio SDK."""
+"""Constants for the Mantarray File Manager."""
 import uuid
 
 CURI_BIO_ACCOUNT_UUID = uuid.UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")

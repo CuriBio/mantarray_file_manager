@@ -68,12 +68,16 @@ def test_WellFile__opens_and_get_mantarray_serial_number():
     assert wf.get_mantarray_serial_number() == "M02001900"
 
 
-# def test_WellFile__opens_and_get_UTC_begin_recording():
-#     wf = WellFile(
-#         os.path.join(PATH_OF_CURRENT_FILE, "M120171010__2020_07_22_201922", "M120171010__2020_07_22_201922__A1.h5")
-#     )
+def test_WellFile__opens_and_get_begin_recording():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "MA200440001__2020_08_04_210642",
+            "MA200440001__2020_08_04_210642__A1.h5",
+        )
+    )
 
-#     assert wf.get_UTC_begin_recording() == ""
+    assert wf.get_begin_recording() == "2020-08-04 21:06:42.105937"
 
 
 def test_WellFile__opens_and_get_numpy_array():
@@ -121,7 +125,7 @@ def test_PlateRecording__opens_and_get_wellfile_names():
 def test_get_unique_files():
     unique_files = files.get_unique_files_from_directory(PATH_OF_CURRENT_FILE)
 
-    assert len(unique_files) == 76
+    assert len(unique_files) == 124
 
 
 def test_get_files_by_well_name():

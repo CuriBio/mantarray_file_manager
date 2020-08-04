@@ -70,6 +70,3 @@ __all__ = [
     "CURI_BIO_USER_ACCOUNT_ID",
     "METADATA_UUID_DESCRIPTIONS",
 ]
-
-
-# name = "file manager"

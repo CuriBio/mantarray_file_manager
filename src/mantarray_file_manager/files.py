@@ -13,6 +13,7 @@ from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import USER_ACCOUNT_ID_UUID
+from .constants import UTC_BEGINNING_RECORDING_UUID
 
 PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
 
@@ -46,8 +47,6 @@ def get_specified_files(
     Returns:
         a dictionary of the Plate Recordings that fall under the specified search criteria.
     """
-    # unique_files: List[str] = get_unique_files_from_directory(PATH_OF_CURRENT_FILE)
-
     value_dict: Dict[str, List[str]] = {}
     full_dict: Dict[str, Dict[str, List[str]]] = {}
     plate_recording_list: List[str] = []
@@ -113,8 +112,8 @@ class WellFile:
     def get_mantarray_serial_number(self) -> str:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
 
-    # def get_UTC_begin_recording(self) -> str:
-    #     return str(self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)])
+    def get_begin_recording(self) -> str:
+        return str(self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)])
 
     def get_numpy_array(self) -> NDArray[2, float]:
         """Return the data (tissue sensor vs time)."""
