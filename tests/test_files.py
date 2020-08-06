@@ -12,14 +12,22 @@ PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
 
 def test_WellFile__opens_and_get_well_name():
     wf = WellFile(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
     )
     assert wf.get_well_name() == "D6"
 
 
 def test_WellFile__opens_and_get_well_index():
     wf = WellFile(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
     )
     assert wf.get_well_index() == 23
 
@@ -39,11 +47,11 @@ def test_WellFile__opens_and_get_user_account():
     wf = WellFile(
         os.path.join(
             PATH_OF_CURRENT_FILE,
-            "M120171010__2020_07_22_201922",
-            "M120171010__2020_07_22_201922__A1.h5",
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
         )
     )
-    assert wf.get_user_account() == "bab42d5a-25ab-4b88-90ca-55914b55cf58"
+    assert wf.get_user_account() == "455b93eb-c78f-4494-9f73-d3291130f126"
 
 
 def test_WellFile__opens_and_get_customer_account():
@@ -72,12 +80,12 @@ def test_WellFile__opens_and_get_begin_recording():
     wf = WellFile(
         os.path.join(
             PATH_OF_CURRENT_FILE,
-            "MA200440001__2020_08_04_210642",
-            "MA200440001__2020_08_04_210642__A1.h5",
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__A1.h5",
         )
     )
 
-    assert wf.get_begin_recording() == "2020-08-04 21:06:42.105937"
+    assert wf.get_begin_recording() == "2020-08-04 22:01:27.491628"
 
 
 def test_WellFile__opens_and_get_numpy_array():
@@ -96,22 +104,34 @@ def test_WellFile__opens_and_get_voltage_array():
 
 def test_PlateRecording__opens_and_get_wellfile_names():
     wf1 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B1.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D1.h5",
     )
     wf2 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B2.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D2.h5",
     )
     wf3 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B3.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D3.h5",
     )
     wf4 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B4.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D4.h5",
     )
     wf5 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B5.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D5.h5",
     )
     wf6 = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5_New", "my_barcode__2020_05_24_203716__B6.h5"
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D6.h5",
     )
 
     file_list = PlateRecording([wf1, wf2, wf3, wf4, wf5, wf6])
@@ -123,14 +143,16 @@ def test_PlateRecording__opens_and_get_wellfile_names():
 
 
 def test_get_unique_files():
-    unique_files = files.get_unique_files_from_directory(PATH_OF_CURRENT_FILE)
+    unique_files = files.get_unique_files_from_directory(
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
+    )
 
-    assert len(unique_files) == 124
+    assert len(unique_files) == 24
 
 
 def test_get_files_by_well_name():
     unique_files = files.get_unique_files_from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5")
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
     dictionary = files.get_specified_files("Well Name", "D6", unique_files)
@@ -140,29 +162,29 @@ def test_get_files_by_well_name():
 
 def test_get_files_by_plate_barcode():
     unique_files = files.get_unique_files_from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "M120171010__2020_07_22_201922")
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
-    dictionary = files.get_specified_files("Plate Barcode", "M120171010", unique_files)
+    dictionary = files.get_specified_files("Plate Barcode", "MA20001010", unique_files)
 
-    assert len(dictionary["Plate Barcode"]["M120171010"]) == 24
+    assert len(dictionary["Plate Barcode"]["MA20001010"]) == 24
 
 
 def test_get_files_by_user():
     unique_files = files.get_unique_files_from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "M120171010__2020_07_22_201922")
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
     dictionary = files.get_specified_files(
-        "User ID", "bab42d5a-25ab-4b88-90ca-55914b55cf58", unique_files
+        "User ID", "455b93eb-c78f-4494-9f73-d3291130f126", unique_files
     )
 
-    assert len(dictionary["User ID"]["bab42d5a-25ab-4b88-90ca-55914b55cf58"]) == 24
+    assert len(dictionary["User ID"]["455b93eb-c78f-4494-9f73-d3291130f126"]) == 24
 
 
 def test_get_files_by_account():
     unique_files = files.get_unique_files_from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "M120171010__2020_07_22_201922")
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
     dictionary = files.get_specified_files(
@@ -174,7 +196,7 @@ def test_get_files_by_account():
 
 def test_get_files_by_serial_number():
     unique_files = files.get_unique_files_from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "M120171010__2020_07_22_201922")
+        os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
     dictionary = files.get_specified_files(
