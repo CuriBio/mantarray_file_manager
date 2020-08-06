@@ -13,6 +13,9 @@ from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import USER_ACCOUNT_ID_UUID
+from .constants import UTC_BEGINNING_RECORDING_UUID
+from .constants import WELL_INDEX_UUID
+from .constants import WELL_NAME_UUID
 
 PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
 
@@ -30,7 +33,32 @@ def get_unique_files_from_directory(directory: str) -> List[str]:
 
     for path, _, files in os.walk(directory):
         for name in files:
-            unique_files.append(os.path.join(path, name))
+            if name.endswith(".h5"):
+                unique_files.append(os.path.join(path, name))
+
+    for file in unique_files:
+        well = WellFile(file)
+        index = well.get_well_index()
+        barcode = well.get_plate_barcode()
+        start_time = well.get_begin_recording()
+
+        duplicates = []
+
+        unique_files.remove(file)
+
+        for item in unique_files:
+            new_well = WellFile(item)
+            if (
+                new_well.get_well_index() == index
+                and new_well.get_plate_barcode() == barcode
+                and new_well.get_begin_recording() == start_time
+            ):
+                duplicates.append(item)
+
+        unique_files.append(file)
+
+        for duplicate_file in duplicates:
+            unique_files.remove(duplicate_file)
 
     return unique_files
 
@@ -46,8 +74,6 @@ def get_specified_files(
     Returns:
         a dictionary of the Plate Recordings that fall under the specified search criteria.
     """
-    # unique_files: List[str] = get_unique_files_from_directory(PATH_OF_CURRENT_FILE)
-
     value_dict: Dict[str, List[str]] = {}
     full_dict: Dict[str, Dict[str, List[str]]] = {}
     plate_recording_list: List[str] = []
@@ -96,10 +122,10 @@ class WellFile:
         )
 
     def get_well_name(self) -> str:
-        return str(self._h5_file.attrs["Well Name"])
+        return str(self._h5_file.attrs[str(WELL_NAME_UUID)])
 
     def get_well_index(self) -> int:
-        return int(self._h5_file.attrs["Well Index (zero-based)"])
+        return int(self._h5_file.attrs[str(WELL_INDEX_UUID)])
 
     def get_plate_barcode(self) -> str:
         return str(self._h5_file.attrs[str(PLATE_BARCODE_UUID)])
@@ -113,8 +139,8 @@ class WellFile:
     def get_mantarray_serial_number(self) -> str:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
 
-    # def get_UTC_begin_recording(self) -> str:
-    #     return str(self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)])
+    def get_begin_recording(self) -> str:
+        return str(self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)])
 
     def get_numpy_array(self) -> NDArray[2, float]:
         """Return the data (tissue sensor vs time)."""
@@ -174,11 +200,11 @@ class PlateRecording:
         return well_files
 
     def get_combined_csv(self) -> None:
-        data = np.zeros((len(self._files_) + 1, 12315))
+        data = np.zeros((len(self._files_) + 1, 5495))
         for i, well in enumerate(self._files_):
             well_data = WellFile(well).get_numpy_array()
-            data[0, :] = well_data[0, :]
-            data[i + 1, :] = well_data[1, :]
+            data[0, :] = well_data[0, 0:5495]
+            data[i + 1, :] = well_data[1, 0:5495]
 
         my_local_path_data = os.path.join(PATH_OF_CURRENT_FILE, "PlateRecording.csv")
         np.savetxt(my_local_path_data, data, delimiter=",", fmt="%d")
