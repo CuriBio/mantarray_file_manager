@@ -36,8 +36,6 @@ def get_unique_files_from_directory(directory: str) -> List[str]:
             if name.endswith(".h5"):
                 unique_files.append(os.path.join(path, name))
 
-
-
     for file in unique_files:
         well = WellFile(file)
         index = well.get_well_index()
@@ -50,7 +48,11 @@ def get_unique_files_from_directory(directory: str) -> List[str]:
 
         for item in unique_files:
             new_well = WellFile(item)
-            if new_well.get_well_index() == index and new_well.get_plate_barcode() == barcode and new_well.get_begin_recording() == start_time:
+            if (
+                new_well.get_well_index() == index
+                and new_well.get_plate_barcode() == barcode
+                and new_well.get_begin_recording() == start_time
+            ):
                 duplicates.append(item)
 
         unique_files.append(file)
