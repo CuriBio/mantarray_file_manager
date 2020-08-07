@@ -8,7 +8,7 @@ setup(
     name="mantarray_file_manager",
     version="0.1",
     description="CREATE A DESCRIPTION",
-    url="https://github.com/CuriBio/mantarray_file_manager",
+    url="https://github.com/CuriBio/mantarray-file-manager",
     project_urls={"Documentation": "https://curibiosdk.readthedocs.io/en/latest/"},
     author="Curi Bio",
     author_email="contact@curibio.com",

@@ -75,7 +75,7 @@ Resources:
         GitCloneDepth: 1
 
         ReportBuildStatus: True
-        Location: "https://github.com/CuriBio/mantarray_file_manager/"
+        Location: "https://github.com/CuriBio/mantarray-file-manager/"
         Type: GITHUB
 
       QueuedTimeoutInMinutes: 10
