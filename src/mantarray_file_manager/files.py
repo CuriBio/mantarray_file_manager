@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """Classes and functinos for finding and managing files."""
+from datetime import datetime
 import os
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import h5py
 from nptyping import NDArray
@@ -121,6 +123,11 @@ class WellFile:
             file_name, "r",
         )
 
+    def get_unique_recording_key(self) -> Tuple[str, datetime]:
+        barcode = self.get_plate_barcode()
+        start_time = self.get_begin_recording()
+        return barcode, start_time
+
     def get_well_name(self) -> str:
         return str(self._h5_file.attrs[str(WELL_NAME_UUID)])
 
@@ -139,8 +146,9 @@ class WellFile:
     def get_mantarray_serial_number(self) -> str:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
 
-    def get_begin_recording(self) -> str:
-        return str(self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)])
+    def get_begin_recording(self) -> datetime:
+        timestamp_str = self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)]
+        return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
 
     def get_numpy_array(self) -> NDArray[2, float]:
         """Return the data (tissue sensor vs time)."""

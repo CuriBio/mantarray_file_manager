@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-import inspect
+from datetime import datetime
 import os
 
 from mantarray_file_manager import files
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import WellFile
 import numpy as np
+from stdlib_utils import get_current_file_abs_directory
 
-PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
+from .fixtures import fixture_generic_well_file
+
+__fixtures__ = (fixture_generic_well_file,)
+PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
 
 def test_WellFile__opens_and_get_well_name():
@@ -54,6 +58,13 @@ def test_WellFile__opens_and_get_user_account():
     assert wf.get_user_account() == "455b93eb-c78f-4494-9f73-d3291130f126"
 
 
+def test_WellFile__get_unique_recording_key(generic_well_file):
+    assert generic_well_file.get_unique_recording_key() == (
+        "MA20001010",
+        datetime(2020, 8, 4, 22, 1, 27, 491628),
+    )
+
+
 def test_WellFile__opens_and_get_customer_account():
     wf = WellFile(
         os.path.join(
@@ -85,7 +96,7 @@ def test_WellFile__opens_and_get_begin_recording():
         )
     )
 
-    assert wf.get_begin_recording() == "2020-08-04 22:01:27.491628"
+    assert wf.get_begin_recording() == datetime(2020, 8, 4, 22, 1, 27, 491628)
 
 
 def test_WellFile__opens_and_get_numpy_array():
