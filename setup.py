@@ -7,15 +7,19 @@ from setuptools import setup
 setup(
     name="mantarray_file_manager",
     version="0.1",
-    description="CREATE A DESCRIPTION",
+    description="Finds and opens Mantarray files.",
     url="https://github.com/CuriBio/mantarray-file-manager",
-    project_urls={"Documentation": "https://curibiosdk.readthedocs.io/en/latest/"},
     author="Curi Bio",
     author_email="contact@curibio.com",
     license="MIT",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    install_requires=["h5py>=2.10.0", "nptyping>=1.2.0", "numpy>=1.19.0"],
+    install_requires=[
+        "h5py>=2.10.0",
+        "nptyping>=1.3.0",
+        "numpy>=1.19.1",
+        "stdlib-utils>=0.2.1",
+    ],
     zip_safe=False,
     include_package_data=True,
     classifiers=[
