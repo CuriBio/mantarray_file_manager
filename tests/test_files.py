@@ -239,3 +239,11 @@ def test_PlateRecording__raises_error_if_files_not_from_same_session(
         PlateRecording(
             (generic_well_file.get_file_name(), generic_well_file_0_3_1.get_file_name())
         )
+
+
+def test_PlateRecording__can_init_from_filepath_or_wellfile(generic_well_file_0_3_1):
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE, "h5", "v0.3.1", "MA20123456__2020_08_17_145752__B4.h5",
+    )
+    pr = PlateRecording((file_path, generic_well_file_0_3_1))
+    assert len(pr.get_well_names()) == 2

@@ -5,7 +5,9 @@ import os
 from typing import Dict
 from typing import List
 from typing import Sequence
+from typing import Set
 from typing import Tuple
+from typing import Union
 from uuid import UUID
 
 import h5py
@@ -202,16 +204,19 @@ class PlateRecording:
     """Wrapper around 24 WellFiles fpr a single plate of data.
 
     Args:
-        file_paths: A list of all the file paths for each h5 file to open.
+        file_paths: A list of all the file paths for each h5 file to open, or already instantiated WellFile objects.
 
     Attributes:
         _files : WellFiles of all the file paths provided.
     """
 
-    def __init__(self, file_paths: Sequence[str]) -> None:
+    def __init__(self, file_paths: Sequence[Union[str, WellFile]]) -> None:
         self._files: List[WellFile] = list()
         for iter_file_path in file_paths:
-            well_file = WellFile(iter_file_path)
+
+            well_file = iter_file_path
+            if isinstance(well_file, str):
+                well_file = WellFile(well_file)
             if len(self._files) > 0:
                 new_session_key = well_file.get_unique_recording_key()
                 old_file = self._files[0]
@@ -225,6 +230,12 @@ class PlateRecording:
         for well in self._files:
             well_files.append(well.get_well_name())
         return well_files
+
+    def get_well_names(self) -> Set[str]:
+        out_set: Set[str] = set()
+        for iter_well_file in self._files:
+            out_set.add(iter_well_file.get_well_name())
+        return out_set
 
     def get_combined_csv(self) -> None:
         data = np.zeros((len(self._files) + 1, 5495))
