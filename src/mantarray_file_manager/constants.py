@@ -65,3 +65,4 @@ METADATA_UUID_DESCRIPTIONS = {
     ADC_REF_OFFSET_UUID: "ADC Reference Sensor Offset",
     PLATE_BARCODE_UUID: "Plate Barcode",
 }
+DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Classes and functinos for finding and managing files."""
-from datetime import datetime
+import datetime
 import os
 from typing import Dict
 from typing import List
+from typing import Sequence
 from typing import Tuple
 from uuid import UUID
 
@@ -13,12 +14,14 @@ import numpy as np
 from stdlib_utils import get_current_file_abs_directory
 
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
+from .constants import DATETIME_STR_FORMAT
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import USER_ACCOUNT_ID_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
+from .exceptions import WellRecordingsNotFromSameSessionError
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -123,8 +126,12 @@ class WellFile:
         self._h5_file: h5py._hl.files.File = h5py.File(
             file_name, "r",
         )
+        self._file_name = file_name
 
-    def get_unique_recording_key(self) -> Tuple[str, datetime]:
+    def get_file_name(self) -> str:
+        return self._file_name
+
+    def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
         barcode = self.get_plate_barcode()
         start_time = self.get_begin_recording()
         return barcode, start_time
@@ -147,9 +154,11 @@ class WellFile:
     def get_mantarray_serial_number(self) -> str:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
 
-    def get_begin_recording(self) -> datetime:
+    def get_begin_recording(self) -> datetime.datetime:
         timestamp_str = self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)]
-        return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
+        return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+            tzinfo=datetime.timezone.utc
+        )
 
     def get_numpy_array(self) -> NDArray[2, float]:
         """Return the data (tissue sensor vs time)."""
@@ -196,22 +205,31 @@ class PlateRecording:
         file_paths: A list of all the file paths for each h5 file to open.
 
     Attributes:
-        _files_ : WellFiles of all the file paths provided.
+        _files : WellFiles of all the file paths provided.
     """
 
-    def __init__(self, file_paths: List[str]) -> None:
-        self._files_: List[str] = file_paths
+    def __init__(self, file_paths: Sequence[str]) -> None:
+        self._files: List[WellFile] = list()
+        for iter_file_path in file_paths:
+            well_file = WellFile(iter_file_path)
+            if len(self._files) > 0:
+                new_session_key = well_file.get_unique_recording_key()
+                old_file = self._files[0]
+                old_session_key = old_file.get_unique_recording_key()
+                if new_session_key != old_session_key:
+                    raise WellRecordingsNotFromSameSessionError(old_file, well_file)
+            self._files.append(well_file)
 
-    def get_wellfile_names(self) -> List[str]:
+    def get_wellfile_names(self) -> Sequence[str]:
         well_files = []
-        for well in self._files_:
-            well_files.append(WellFile(well).get_well_name())
+        for well in self._files:
+            well_files.append(well.get_well_name())
         return well_files
 
     def get_combined_csv(self) -> None:
-        data = np.zeros((len(self._files_) + 1, 5495))
-        for i, well in enumerate(self._files_):
-            well_data = WellFile(well).get_numpy_array()
+        data = np.zeros((len(self._files) + 1, 5495))
+        for i, well in enumerate(self._files):
+            well_data = well.get_numpy_array()
             data[0, :] = well_data[0, 0:5495]
             data[i + 1, :] = well_data[1, 0:5495]
 

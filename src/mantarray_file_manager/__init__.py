@@ -9,6 +9,7 @@ from .constants import ADC_TISSUE_OFFSET_UUID
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
+from .constants import DATETIME_STR_FORMAT
 from .constants import HARDWARE_TEST_RECORDING_UUID
 from .constants import MAIN_FIRMWARE_VERSION_UUID
 from .constants import MANTARRAY_NICKNAME_UUID
@@ -33,6 +34,7 @@ from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
 from .constants import WELL_ROW_UUID
 from .constants import XEM_SERIAL_NUMBER_UUID
+from .exceptions import WellRecordingsNotFromSameSessionError
 from .files import PlateRecording
 from .files import WellFile
 
@@ -69,4 +71,6 @@ __all__ = [
     "CURI_BIO_ACCOUNT_UUID",
     "CURI_BIO_USER_ACCOUNT_ID",
     "METADATA_UUID_DESCRIPTIONS",
+    "DATETIME_STR_FORMAT",
+    "WellRecordingsNotFromSameSessionError",
 ]

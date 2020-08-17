@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+
+import datetime
 import os
 from uuid import UUID
 
 from mantarray_file_manager import files
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import WellFile
+from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
+import pytest
 from stdlib_utils import get_current_file_abs_directory
 
 from .fixtures import fixture_generic_well_file
+from .fixtures import fixture_generic_well_file_0_3_1
 
-__fixtures__ = (fixture_generic_well_file,)
+__fixtures__ = (fixture_generic_well_file, fixture_generic_well_file_0_3_1)
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
 
@@ -62,7 +66,7 @@ def test_WellFile__opens_and_get_user_account():
 def test_WellFile__get_unique_recording_key(generic_well_file):
     assert generic_well_file.get_unique_recording_key() == (
         "MA20001010",
-        datetime(2020, 8, 4, 22, 1, 27, 491628),
+        datetime.datetime(2020, 8, 4, 22, 1, 27, 491628, tzinfo=datetime.timezone.utc),
     )
 
 
@@ -97,7 +101,9 @@ def test_WellFile__opens_and_get_begin_recording():
         )
     )
 
-    assert wf.get_begin_recording() == datetime(2020, 8, 4, 22, 1, 27, 491628)
+    assert wf.get_begin_recording() == datetime.datetime(
+        2020, 8, 4, 22, 1, 27, 491628, tzinfo=datetime.timezone.utc
+    )
 
 
 def test_WellFile__opens_and_get_numpy_array():
@@ -221,3 +227,15 @@ def test_get_files_by_serial_number():
     )
 
     assert len(dictionary["Mantarray Serial Number"]["M02001900"]) == 24
+
+
+def test_PlateRecording__raises_error_if_files_not_from_same_session(
+    generic_well_file, generic_well_file_0_3_1
+):
+    with pytest.raises(
+        WellRecordingsNotFromSameSessionError,
+        match=r"'MA20001010'.*2020-08-04 22:01:27.491628\+00:00.*MA20123456.*2020-08-17 14:58:10.728254\+00:00",
+    ):
+        PlateRecording(
+            (generic_well_file.get_file_name(), generic_well_file_0_3_1.get_file_name())
+        )
