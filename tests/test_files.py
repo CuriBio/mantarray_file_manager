@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import os
+from uuid import UUID
 
 from mantarray_file_manager import files
 from mantarray_file_manager import PlateRecording
@@ -55,7 +56,7 @@ def test_WellFile__opens_and_get_user_account():
             "MA20001010__2020_08_04_220041__D6.h5",
         )
     )
-    assert wf.get_user_account() == "455b93eb-c78f-4494-9f73-d3291130f126"
+    assert wf.get_user_account() == UUID("455b93eb-c78f-4494-9f73-d3291130f126")
 
 
 def test_WellFile__get_unique_recording_key(generic_well_file):
@@ -73,7 +74,7 @@ def test_WellFile__opens_and_get_customer_account():
             "M120171010__2020_07_22_201922__A1.h5",
         )
     )
-    assert wf.get_customer_account() == "73f52be0-368c-42d8-a1fd-660d49ba5604"
+    assert wf.get_customer_account() == UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
 
 
 def test_WellFile__opens_and_get_mantarray_serial_number():
@@ -187,10 +188,12 @@ def test_get_files_by_user():
     )
 
     dictionary = files.get_specified_files(
-        "User ID", "455b93eb-c78f-4494-9f73-d3291130f126", unique_files
+        "User ID", UUID("455b93eb-c78f-4494-9f73-d3291130f126"), unique_files
     )
 
-    assert len(dictionary["User ID"]["455b93eb-c78f-4494-9f73-d3291130f126"]) == 24
+    assert (
+        len(dictionary["User ID"][UUID("455b93eb-c78f-4494-9f73-d3291130f126")]) == 24
+    )
 
 
 def test_get_files_by_account():
@@ -199,10 +202,13 @@ def test_get_files_by_account():
     )
 
     dictionary = files.get_specified_files(
-        "Account ID", "73f52be0-368c-42d8-a1fd-660d49ba5604", unique_files
+        "Account ID", UUID("73f52be0-368c-42d8-a1fd-660d49ba5604"), unique_files
     )
 
-    assert len(dictionary["Account ID"]["73f52be0-368c-42d8-a1fd-660d49ba5604"]) == 24
+    assert (
+        len(dictionary["Account ID"][UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")])
+        == 24
+    )
 
 
 def test_get_files_by_serial_number():

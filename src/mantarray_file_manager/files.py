@@ -5,6 +5,7 @@ import os
 from typing import Dict
 from typing import List
 from typing import Tuple
+from uuid import UUID
 
 import h5py
 from nptyping import NDArray
@@ -137,11 +138,11 @@ class WellFile:
     def get_plate_barcode(self) -> str:
         return str(self._h5_file.attrs[str(PLATE_BARCODE_UUID)])
 
-    def get_user_account(self) -> str:
-        return str(self._h5_file.attrs[str(USER_ACCOUNT_ID_UUID)])
+    def get_user_account(self) -> UUID:
+        return UUID(self._h5_file.attrs[str(USER_ACCOUNT_ID_UUID)])
 
-    def get_customer_account(self) -> str:
-        return str(self._h5_file.attrs[str(CUSTOMER_ACCOUNT_ID_UUID)])
+    def get_customer_account(self) -> UUID:
+        return UUID(self._h5_file.attrs[str(CUSTOMER_ACCOUNT_ID_UUID)])
 
     def get_mantarray_serial_number(self) -> str:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
