@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Classes and functinos for finding and managing files."""
-import inspect
 import os
 from typing import Dict
 from typing import List
@@ -8,6 +7,7 @@ from typing import List
 import h5py
 from nptyping import NDArray
 import numpy as np
+from stdlib_utils import get_current_file_abs_directory
 
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
@@ -17,7 +17,7 @@ from .constants import UTC_BEGINNING_RECORDING_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
 
-PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
+PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
 
 def get_unique_files_from_directory(directory: str) -> List[str]:
