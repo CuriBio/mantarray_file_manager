@@ -81,6 +81,22 @@ def test_WellFile__opens_and_get_customer_account():
     assert wf.get_customer_account() == UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
 
 
+def test_WellFile__returns_time_index_of_request_to_start_recording(
+    generic_well_file_0_3_1,
+):
+    actual = generic_well_file_0_3_1.get_recording_start_index()
+    assert actual == 392000
+
+
+def test_WellFile__get_timestamp_of_beginning_of_data_acquisition(
+    generic_well_file_0_3_1,
+):
+    actual = generic_well_file_0_3_1.get_timestamp_of_beginning_of_data_acquisition()
+    assert actual == datetime.datetime(
+        2020, 8, 17, 14, 57, 48, 189863, tzinfo=datetime.timezone.utc
+    )
+
+
 def test_WellFile__opens_and_get_mantarray_serial_number():
     wf = WellFile(
         os.path.join(
@@ -111,6 +127,21 @@ def test_WellFile__opens_and_get_numpy_array():
         os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
     )
     assert np.size(wf.get_numpy_array()) == 25986
+
+
+def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_0_3_1,
+):
+
+    arr = generic_well_file_0_3_1.get_raw_tissue_reading()
+    assert arr.shape == (2, 370)
+    assert arr.dtype == np.int32
+    assert arr[0, 0] == 880
+    assert arr[1, 0] == -1230373
+
+    expected_timestep = 960  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+    assert arr[1, 150] == 817496
 
 
 def test_WellFile__opens_and_get_voltage_array():

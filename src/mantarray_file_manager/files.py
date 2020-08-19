@@ -2,6 +2,7 @@
 """Classes and functinos for finding and managing files."""
 import datetime
 import os
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Sequence
@@ -18,9 +19,14 @@ from stdlib_utils import get_current_file_abs_directory
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
+from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import PLATE_BARCODE_UUID
+from .constants import START_RECORDING_TIME_INDEX_UUID
+from .constants import TISSUE_SAMPLING_PERIOD_UUID
 from .constants import USER_ACCOUNT_ID_UUID
+from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
+from .constants import UTC_FIRST_TISSUE_DATA_POINT_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
 from .exceptions import WellRecordingsNotFromSameSessionError
@@ -114,6 +120,16 @@ def get_specified_files(
     return full_dict
 
 
+def _extract_datetime_from_h5(
+    open_h5_file: h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
+    metadata_uuid: UUID,
+) -> datetime.datetime:
+    timestamp_str = open_h5_file.attrs[str(metadata_uuid)]
+    return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+        tzinfo=datetime.timezone.utc
+    )
+
+
 class WellFile:
     """Wrapper around an H5 file for a single well of data.
 
@@ -150,6 +166,11 @@ class WellFile:
     def get_user_account(self) -> UUID:
         return UUID(self._h5_file.attrs[str(USER_ACCOUNT_ID_UUID)])
 
+    def get_timestamp_of_beginning_of_data_acquisition(self) -> datetime.datetime:
+        return _extract_datetime_from_h5(
+            self._h5_file, UTC_BEGINNING_DATA_ACQUISTION_UUID
+        )
+
     def get_customer_account(self) -> UUID:
         return UUID(self._h5_file.attrs[str(CUSTOMER_ACCOUNT_ID_UUID)])
 
@@ -157,10 +178,63 @@ class WellFile:
         return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
 
     def get_begin_recording(self) -> datetime.datetime:
-        timestamp_str = self._h5_file.attrs[str(UTC_BEGINNING_RECORDING_UUID)]
-        return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
-            tzinfo=datetime.timezone.utc
+        return _extract_datetime_from_h5(self._h5_file, UTC_BEGINNING_RECORDING_UUID)
+
+    def get_timestamp_of_first_tissue_data_point(self) -> datetime.datetime:
+        return _extract_datetime_from_h5(
+            self._h5_file, UTC_FIRST_TISSUE_DATA_POINT_UUID
         )
+
+    def get_tissue_sampling_period_microseconds(self) -> int:
+        return int(self._h5_file.attrs[str(TISSUE_SAMPLING_PERIOD_UUID)])
+
+    def get_recording_start_index(self) -> int:
+        """Get the time index when recording was requested.
+
+        This is the number of centimilliseconds from beginning of the
+        start of data acquisition that was displayed on the screen when
+        the user pressed the Record button.
+        """
+        return int(self._h5_file.attrs[str(START_RECORDING_TIME_INDEX_UUID)])
+
+    def get_raw_tissue_reading(self) -> NDArray[(2, Any), int]:
+        """Get a value vs time array.
+
+        Time (centi-milliseconds) is first dimension, value is second
+        dimension.
+
+        Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
+        """
+        recording_start_index_useconds = (
+            self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
+        )
+        timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
+            microseconds=recording_start_index_useconds
+        )
+        time_delta = (
+            self.get_timestamp_of_first_tissue_data_point() - timestamp_of_start_index
+        )
+
+        time_delta_centimilliseconds = int(
+            time_delta
+            / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
+        )
+
+        time_step = int(
+            self.get_tissue_sampling_period_microseconds()
+            / MICROSECONDS_PER_CENTIMILLISECOND
+        )
+        tissue_data = self._h5_file["tissue_sensor_readings"]
+
+        times = np.arange(len(tissue_data), dtype=np.int32) * time_step
+        len_time = len(times)
+
+        data = np.zeros((2, len_time), dtype=np.int32)
+        for i in range(len_time):
+            data[0, i] = times[i] + time_delta_centimilliseconds
+            data[1, i] = tissue_data[i]
+
+        return data
 
     def get_numpy_array(self) -> NDArray[2, float]:
         """Return the data (tissue sensor vs time)."""
