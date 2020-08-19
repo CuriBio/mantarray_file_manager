@@ -4,14 +4,17 @@ import uuid
 from mantarray_file_manager import ADC_GAIN_SETTING_UUID
 from mantarray_file_manager import ADC_REF_OFFSET_UUID
 from mantarray_file_manager import ADC_TISSUE_OFFSET_UUID
+from mantarray_file_manager import CENTIMILLISECONDS_PER_SECOND
 from mantarray_file_manager import CURI_BIO_ACCOUNT_UUID
 from mantarray_file_manager import CURI_BIO_USER_ACCOUNT_ID
 from mantarray_file_manager import CUSTOMER_ACCOUNT_ID_UUID
+from mantarray_file_manager import DATETIME_STR_FORMAT
 from mantarray_file_manager import HARDWARE_TEST_RECORDING_UUID
 from mantarray_file_manager import MAIN_FIRMWARE_VERSION_UUID
 from mantarray_file_manager import MANTARRAY_NICKNAME_UUID
 from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
+from mantarray_file_manager import MICROSECONDS_PER_CENTIMILLISECOND
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
 from mantarray_file_manager import REFERENCE_VOLTAGE_UUID
@@ -36,6 +39,12 @@ from mantarray_file_manager import XEM_SERIAL_NUMBER_UUID
 def test_default_UUIDs():
     assert CURI_BIO_ACCOUNT_UUID == uuid.UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
     assert CURI_BIO_USER_ACCOUNT_ID == uuid.UUID("455b93eb-c78f-4494-9f73-d3291130f126")
+
+
+def test_time_conversion():
+    assert DATETIME_STR_FORMAT == "%Y-%m-%d %H:%M:%S.%f"
+    assert CENTIMILLISECONDS_PER_SECOND == 1e5
+    assert MICROSECONDS_PER_CENTIMILLISECOND == 10
 
 
 def test_metadata_UUIDs():

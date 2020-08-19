@@ -88,7 +88,9 @@ jobs:
       - name: Confirm Sphinx Docs build correctly
         # only check Sphinx docs build on the fastest job
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == 3.7
-        run: SPHINXOPTS="-W" make --directory=docs html # the -W flag treats warnings as errors to cause build failures
+        run: |
+          pip install -r docs/requirements.txt
+          SPHINXOPTS="-W" make --directory=docs html # the -W flag treats warnings as errors to cause build failures
 
       - name: Upload coverage to Codecov
         # only upload coverage from fastest job
