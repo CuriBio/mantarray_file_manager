@@ -31,3 +31,16 @@ def fixture_generic_well_file_0_3_1():
         )
     )
     yield wf
+
+
+@pytest.fixture(scope="function", name="generic_well_file_0_3_1__2")
+def fixture_generic_well_file_0_3_1__2():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.3.1",
+            "MA20123456__2020_08_17_145752__A2.h5",
+        )
+    )
+    yield wf

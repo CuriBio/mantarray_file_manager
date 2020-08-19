@@ -286,6 +286,7 @@ class PlateRecording:
 
     def __init__(self, file_paths: Sequence[Union[str, WellFile]]) -> None:
         self._files: List[WellFile] = list()
+        self._wells_by_index: Dict[int, WellFile] = dict()
         for iter_file_path in file_paths:
 
             well_file = iter_file_path
@@ -298,6 +299,10 @@ class PlateRecording:
                 if new_session_key != old_session_key:
                     raise WellRecordingsNotFromSameSessionError(old_file, well_file)
             self._files.append(well_file)
+            self._wells_by_index[well_file.get_well_index()] = well_file
+
+    def get_well_by_index(self, well_index: int) -> WellFile:
+        return self._wells_by_index[well_index]
 
     def get_wellfile_names(self) -> Sequence[str]:
         well_files = []
@@ -310,6 +315,9 @@ class PlateRecording:
         for iter_well_file in self._files:
             out_set.add(iter_well_file.get_well_name())
         return out_set
+
+    def get_well_indices(self) -> Tuple[int, ...]:
+        return tuple(sorted(self._wells_by_index.keys()))
 
     def get_combined_csv(self) -> None:
         data = np.zeros((len(self._files) + 1, 5495))

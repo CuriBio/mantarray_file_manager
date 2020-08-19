@@ -14,8 +14,13 @@ from stdlib_utils import get_current_file_abs_directory
 
 from .fixtures import fixture_generic_well_file
 from .fixtures import fixture_generic_well_file_0_3_1
+from .fixtures import fixture_generic_well_file_0_3_1__2
 
-__fixtures__ = (fixture_generic_well_file, fixture_generic_well_file_0_3_1)
+__fixtures__ = (
+    fixture_generic_well_file,
+    fixture_generic_well_file_0_3_1,
+    fixture_generic_well_file_0_3_1__2,
+)
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
 
@@ -278,3 +283,17 @@ def test_PlateRecording__can_init_from_filepath_or_wellfile(generic_well_file_0_
     )
     pr = PlateRecording((file_path, generic_well_file_0_3_1))
     assert len(pr.get_well_names()) == 2
+
+
+def test_PlateRecording__get_well_by_index__works_when_not_all_wells_present_in_PlateRecording(
+    generic_well_file_0_3_1,
+):
+    pr = PlateRecording([generic_well_file_0_3_1])
+    assert pr.get_well_by_index(9) is generic_well_file_0_3_1
+
+
+def test_PlateRecording__get_well_indices__returns_sorted_set(
+    generic_well_file_0_3_1, generic_well_file_0_3_1__2
+):
+    pr = PlateRecording([generic_well_file_0_3_1, generic_well_file_0_3_1__2])
+    assert pr.get_well_indices() == (4, 9)
