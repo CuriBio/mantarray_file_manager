@@ -10,16 +10,14 @@ Welcome to Curi Bio's Mantarray File Manager documentation!
 Welcome to Curi Bio's File Manager! This tool will allow you to parse through
 the various files output by the Mantarray instrument to be ready for analysis.
 
-If you haven't already, :ref'install mantarray_file_manager first <gettingstarted>' and then explore these pages:
-
-.. automodule:: mantarray_file_manager.files
-    :members:
+If you haven't already, :ref:`install the package first<gettingstarted>`.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    gettingstarted
+   usingthesdk
 
 Indices and tables
 ==================
