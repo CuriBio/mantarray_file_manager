@@ -146,6 +146,11 @@ class WellFile:
         )
         self._file_name = file_name
 
+    def get_h5_file(
+        self,
+    ) -> h5py._hl.files.File:  # pylint: disable=protected-access # WTF pylint...this is a type definition
+        return self._h5_file
+
     def get_file_name(self) -> str:
         return self._file_name
 
@@ -153,6 +158,9 @@ class WellFile:
         barcode = self.get_plate_barcode()
         start_time = self.get_begin_recording()
         return barcode, start_time
+
+    def get_h5_attribute(self, attr_name: str) -> Any:
+        return self._h5_file.attrs[attr_name]
 
     def get_well_name(self) -> str:
         return str(self._h5_file.attrs[str(WELL_NAME_UUID)])

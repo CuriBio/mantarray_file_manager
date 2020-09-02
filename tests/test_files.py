@@ -4,6 +4,7 @@ import datetime
 import os
 from uuid import UUID
 
+import h5py
 from mantarray_file_manager import files
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import WellFile
@@ -154,6 +155,22 @@ def test_WellFile__opens_and_get_voltage_array():
         os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
     )
     assert np.size(wf.get_voltage_array()) == 25986
+
+
+def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
+    generic_well_file_0_3_1,
+):
+    assert generic_well_file_0_3_1.get_h5_attribute("File Format Version") == "0.3.1"
+
+
+def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
+    assert (
+        isinstance(
+            generic_well_file_0_3_1.get_h5_file(),
+            h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
+        )
+        is True
+    )
 
 
 def test_PlateRecording__opens_and_get_wellfile_names():
