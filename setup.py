@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="mantarray_file_manager",
-    version="0.1",
+    version="0.2",
     description="Finds and opens Mantarray files.",
     url="https://github.com/CuriBio/mantarray-file-manager",
     author="Curi Bio",
@@ -19,6 +19,7 @@ setup(
         "nptyping>=1.3.0",
         "numpy>=1.19.1",
         "stdlib-utils>=0.2.1",
+        'importlib-metadata ~= 1.0 ; python_version < "3.8"',
     ],
     zip_safe=False,
     include_package_data=True,

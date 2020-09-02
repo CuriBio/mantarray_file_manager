@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Classes and functinos for finding and managing files."""
 import datetime
+from glob import glob
 import os
 from typing import Any
 from typing import Dict
@@ -146,6 +147,11 @@ class WellFile:
         )
         self._file_name = file_name
 
+    def get_h5_file(
+        self,
+    ) -> h5py._hl.files.File:  # pylint: disable=protected-access # WTF pylint...this is a type definition
+        return self._h5_file
+
     def get_file_name(self) -> str:
         return self._file_name
 
@@ -153,6 +159,9 @@ class WellFile:
         barcode = self.get_plate_barcode()
         start_time = self.get_begin_recording()
         return barcode, start_time
+
+    def get_h5_attribute(self, attr_name: str) -> Any:
+        return self._h5_file.attrs[attr_name]
 
     def get_well_name(self) -> str:
         return str(self._h5_file.attrs[str(WELL_NAME_UUID)])
@@ -300,6 +309,10 @@ class PlateRecording:
                     raise WellRecordingsNotFromSameSessionError(old_file, well_file)
             self._files.append(well_file)
             self._wells_by_index[well_file.get_well_index()] = well_file
+
+    @classmethod
+    def from_directory(cls, dir_to_load_files_from: str) -> "PlateRecording":
+        return cls(glob(os.path.join(dir_to_load_files_from, "*.h5")))
 
     def get_well_by_index(self, well_index: int) -> WellFile:
         return self._wells_by_index[well_index]
