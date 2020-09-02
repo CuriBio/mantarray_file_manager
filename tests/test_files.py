@@ -173,6 +173,13 @@ def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
     )
 
 
+def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():
+    pr = PlateRecording.from_directory(
+        os.path.join(PATH_OF_CURRENT_FILE, "h5", "v0.3.1")
+    )
+    assert len(pr.get_well_names()) == 24
+
+
 def test_PlateRecording__opens_and_get_wellfile_names():
     wf1 = os.path.join(
         PATH_OF_CURRENT_FILE,

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Classes and functinos for finding and managing files."""
 import datetime
+from glob import glob
 import os
 from typing import Any
 from typing import Dict
@@ -308,6 +309,10 @@ class PlateRecording:
                     raise WellRecordingsNotFromSameSessionError(old_file, well_file)
             self._files.append(well_file)
             self._wells_by_index[well_file.get_well_index()] = well_file
+
+    @classmethod
+    def from_directory(cls, dir_to_load_files_from: str) -> "PlateRecording":
+        return cls(glob(os.path.join(dir_to_load_files_from, "*.h5")))
 
     def get_well_by_index(self, well_index: int) -> WellFile:
         return self._wells_by_index[well_index]
