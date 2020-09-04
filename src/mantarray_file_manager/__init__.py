@@ -40,12 +40,12 @@ from .exceptions import WellRecordingsNotFromSameSessionError
 from .files import PlateRecording
 from .files import WellFile
 
-try:  # adapted from https://packaging.python.org/guides/single-sourcing-package-version/
-    from importlib import metadata
-except ImportError:  # pragma: no cover
-    # Running on pre-3.8 Python; use importlib-metadata package
-    import importlib_metadata as metadata  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
-__version__: str = metadata.version("mantarray_file_manager")  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
+# try:  # adapted from https://packaging.python.org/guides/single-sourcing-package-version/
+#     from importlib import metadata
+# except ImportError:  # pragma: no cover
+#     # Running on pre-3.8 Python; use importlib-metadata package
+#     import importlib_metadata as metadata  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
+# __version__: str = metadata.version("mantarray_file_manager")  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
 
 __all__ = [
     "WellFile",
