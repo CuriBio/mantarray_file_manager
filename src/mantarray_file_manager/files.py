@@ -245,43 +245,6 @@ class WellFile:
 
         return data
 
-    def get_numpy_array(self) -> NDArray[2, float]:
-        """Return the data (tissue sensor vs time)."""
-        time_step = 8 * 1.2e-3  # tissue sample rate is just over 100Hz
-        tissue_data = self._h5_file["tissue_sensor_readings"]
-
-        times = np.arange(len(tissue_data)) * time_step
-        len_time = len(times)
-
-        data = np.zeros((2, len_time))
-        for i in range(len_time):
-            data[0, i] = times[i]
-            data[1, i] = tissue_data[i]
-
-        return data
-
-    def get_voltage_array(self) -> NDArray[2, float]:
-        """Return the voltage vs time data."""
-        time_step = 8 * 1.2e-3  # tissue sample rate is just over 100Hz
-        vref = 3.3  # ADC reference voltage
-        least_significant_bit = vref / 2 ** 23  # ADC quantization step
-        gain = 1  # ADC gain
-        tissue_data = self._h5_file["tissue_sensor_readings"]
-
-        times = np.arange(len(tissue_data)) * time_step
-        len_time = len(times)
-
-        voltages = []
-        for this_tissue_data in tissue_data:
-            voltages.append(1e3 * (least_significant_bit * this_tissue_data) / gain)
-
-        voltage_data = np.zeros((2, len_time))
-        for i in range(len_time):
-            voltage_data[0, i] = times[i]
-            voltage_data[1, i] = voltages[i]
-
-        return voltage_data
-
 
 class PlateRecording:
     """Wrapper around 24 WellFiles fpr a single plate of data.
@@ -331,13 +294,3 @@ class PlateRecording:
 
     def get_well_indices(self) -> Tuple[int, ...]:
         return tuple(sorted(self._wells_by_index.keys()))
-
-    def get_combined_csv(self) -> None:
-        data = np.zeros((len(self._files) + 1, 5495))
-        for i, well in enumerate(self._files):
-            well_data = well.get_numpy_array()
-            data[0, :] = well_data[0, 0:5495]
-            data[i + 1, :] = well_data[1, 0:5495]
-
-        my_local_path_data = os.path.join(PATH_OF_CURRENT_FILE, "PlateRecording.csv")
-        np.savetxt(my_local_path_data, data, delimiter=",", fmt="%d")

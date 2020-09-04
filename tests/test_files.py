@@ -128,13 +128,6 @@ def test_WellFile__opens_and_get_begin_recording():
     )
 
 
-def test_WellFile__opens_and_get_numpy_array():
-    wf = WellFile(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
-    )
-    assert np.size(wf.get_numpy_array()) == 25986
-
-
 def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     generic_well_file_0_3_1,
 ):
@@ -148,13 +141,6 @@ def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     expected_timestep = 960  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
     assert arr[0, 1] - arr[0, 0] == expected_timestep
     assert arr[1, 150] == 817496
-
-
-def test_WellFile__opens_and_get_voltage_array():
-    wf = WellFile(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5", "my_barcode__2020_03_17_163600__D6.h5")
-    )
-    assert np.size(wf.get_voltage_array()) == 25986
 
 
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
@@ -213,9 +199,6 @@ def test_PlateRecording__opens_and_get_wellfile_names():
     )
 
     file_list = PlateRecording([wf1, wf2, wf3, wf4, wf5, wf6])
-
-    # test csv writer
-    file_list.get_combined_csv()
 
     assert np.size(file_list.get_wellfile_names()) == 6
 
