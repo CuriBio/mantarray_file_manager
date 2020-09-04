@@ -49,7 +49,7 @@ from .files import WellFile
 
 __all__ = [
     "WellFile",
-    "__version__",
+    # "__version__",
     "PlateRecording",
     "UTC_BEGINNING_DATA_ACQUISTION_UUID",
     "START_RECORDING_TIME_INDEX_UUID",
