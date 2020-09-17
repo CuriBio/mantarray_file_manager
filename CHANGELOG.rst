@@ -1,6 +1,12 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.3.0 (2020-09-17)
+------------------
+
+- Added backwards compatibility with Mantarray H5 file v0.1.1.
+
+
 0.2.1 (2020-09-04)
 ------------------
 
