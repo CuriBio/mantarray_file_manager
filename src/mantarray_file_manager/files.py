@@ -120,6 +120,7 @@ def _extract_datetime_from_h5(
 ) -> datetime.datetime:
     if str(metadata_uuid) not in open_h5_file.attrs:
         if metadata_uuid == UTC_BEGINNING_RECORDING_UUID:
+            # Tanner (9/17/20): The use of this proxy value is justified by the fact that there is a 15 second delay between when data is recorded and when the GUI displays it, and because the GUI will send the timestamp of when the recording button is pressed.
             acquisition_timestamp_str = open_h5_file.attrs[
                 str(UTC_BEGINNING_DATA_ACQUISTION_UUID)
             ]
@@ -128,6 +129,7 @@ def _extract_datetime_from_h5(
             ).replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(seconds=15)
             return begin_recording
         if metadata_uuid == UTC_FIRST_TISSUE_DATA_POINT_UUID:
+            # Tanner (9/17/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
             metadata_name = "UTC Timestamp of Beginning of Recorded Tissue Sensor Data"
             timestamp_str = open_h5_file.attrs[str(metadata_name)]
             return datetime.datetime.strptime(
