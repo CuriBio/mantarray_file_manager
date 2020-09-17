@@ -304,3 +304,41 @@ def test_PlateRecording__get_well_indices__returns_sorted_set(
 ):
     pr = PlateRecording([generic_well_file_0_3_1, generic_well_file_0_3_1__2])
     assert pr.get_well_indices() == (4, 9)
+
+
+def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "M120171010__2020_07_22_201922",
+            "M120171010__2020_07_22_201922__A1.h5",
+        )
+    )
+
+    assert wf.get_h5_attribute("File Format Version") == "0.1.1"
+    assert isinstance(wf.get_h5_file(), h5py.File)
+    assert "M120171010__2020_07_22_201922__A1" in wf.get_file_name()
+    assert wf.get_unique_recording_key() == (
+        "M120171010",
+        datetime.datetime(
+            2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc
+        ),
+    )
+    assert wf.get_well_name() == "A1"
+    assert wf.get_well_index() == 0
+    assert wf.get_plate_barcode() == "M120171010"
+    assert wf.get_user_account() == UUID("bab42d5a-25ab-4b88-90ca-55914b55cf58")
+    assert wf.get_timestamp_of_beginning_of_data_acquisition() == datetime.datetime(
+        2020, 7, 22, 20, 19, 20, 328587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_customer_account() == UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
+    assert wf.get_mantarray_serial_number() == "M02001900"
+    assert wf.get_begin_recording() == datetime.datetime(
+        2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_timestamp_of_first_tissue_data_point() == datetime.datetime(
+        2020, 7, 22, 20, 19, 22, 536587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_tissue_sampling_period_microseconds() == 9600
+    assert wf.get_recording_start_index() == 220000
+    assert isinstance(wf.get_raw_tissue_reading(), np.ndarray)

@@ -118,6 +118,25 @@ def _extract_datetime_from_h5(
     open_h5_file: h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
     metadata_uuid: UUID,
 ) -> datetime.datetime:
+    if str(metadata_uuid) not in open_h5_file.attrs:
+        if metadata_uuid == UTC_BEGINNING_RECORDING_UUID:
+            acquisition_timestamp_str = open_h5_file.attrs[
+                str(UTC_BEGINNING_DATA_ACQUISTION_UUID)
+            ]
+            begin_recording = datetime.datetime.strptime(
+                acquisition_timestamp_str, DATETIME_STR_FORMAT
+            ).replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(seconds=15)
+            return begin_recording
+        if metadata_uuid == UTC_FIRST_TISSUE_DATA_POINT_UUID:
+            metadata_name = "UTC Timestamp of Beginning of Recorded Tissue Sensor Data"
+            timestamp_str = open_h5_file.attrs[str(metadata_name)]
+            return datetime.datetime.strptime(
+                timestamp_str, DATETIME_STR_FORMAT
+            ).replace(tzinfo=datetime.timezone.utc)
+        raise NotImplementedError(
+            f"This UUID is not used in Mantarray Files: {str(metadata_uuid)}"
+        )
+
     timestamp_str = open_h5_file.attrs[str(metadata_uuid)]
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
         tzinfo=datetime.timezone.utc
