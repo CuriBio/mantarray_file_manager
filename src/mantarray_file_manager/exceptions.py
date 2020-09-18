@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """Exceptions."""
 from typing import TYPE_CHECKING
+from uuid import UUID
 
+from immutable_data_validation import is_uuid
+
+from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MIN_SUPPORTED_FILE_VERSION
 
 if TYPE_CHECKING:
@@ -26,6 +30,8 @@ class FileAttributeNotFoundError(Exception):
     def __init__(
         self, attr_name: str, file_version: str, file_path: str,
     ):
+        if is_uuid(attr_name):
+            attr_name = METADATA_UUID_DESCRIPTIONS[UUID(attr_name)]
         super().__init__(
             f"The metadata attribute {attr_name} was not found in this file. File format version {file_version}, filepath: {file_path}"
         )

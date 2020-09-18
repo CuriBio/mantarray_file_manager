@@ -4,4 +4,5 @@ h5py==2.10.0
 nptyping==1.3.0
 numpy==1.19.2
 semver==2.10.2
+immutable_data_validation==0.2.1
 stdlib-utils==0.3.0

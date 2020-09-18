@@ -7,9 +7,11 @@ from uuid import UUID
 import h5py
 from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
+from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
 from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import UnsupportedMantarrayFileVersionError
+from mantarray_file_manager import USER_ACCOUNT_ID_UUID
 from mantarray_file_manager import WellFile
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
@@ -182,6 +184,24 @@ def test_WellFile__get_h5_attribute__raises_error_if_attribute_is_not_found():
         match=f"The metadata attribute {test_attr} was not found in this file. File format version {file_ver}, filepath: {file_path}",
     ):
         wf.get_h5_attribute(test_attr)
+
+
+def test_WellFile__get_h5_attribute__raises_error_with_UUID_description_if_UUID_attribute_is_not_found():
+    file_ver = "0.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20001100__2020_07_15_172203__A4.h5",
+    )
+    wf = WellFile(file_path)
+    test_attr = USER_ACCOUNT_ID_UUID
+    test_attr_description = METADATA_UUID_DESCRIPTIONS[USER_ACCOUNT_ID_UUID]
+    with pytest.raises(
+        FileAttributeNotFoundError,
+        match=f"The metadata attribute {test_attr_description} was not found in this file. File format version {file_ver}, filepath: {file_path}",
+    ):
+        wf.get_h5_attribute(str(test_attr))
 
 
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():

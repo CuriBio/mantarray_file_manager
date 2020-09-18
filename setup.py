@@ -20,6 +20,7 @@ setup(
         "numpy>=1.19.1",
         "stdlib-utils>=0.2.1",
         "semver>=2.10.2",
+        "immutable_data_validation==0.2.1",
         'importlib-metadata ~= 1.0 ; python_version < "3.8"',
     ],
     zip_safe=False,
