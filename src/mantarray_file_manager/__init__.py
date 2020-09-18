@@ -17,6 +17,7 @@ from .constants import MANTARRAY_NICKNAME_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
+from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
 from .constants import REFERENCE_VOLTAGE_UUID
@@ -36,6 +37,8 @@ from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
 from .constants import WELL_ROW_UUID
 from .constants import XEM_SERIAL_NUMBER_UUID
+from .exceptions import FileAttributeNotFoundError
+from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 from .files import PlateRecording
 from .files import WellFile
@@ -85,4 +88,7 @@ __all__ = [
     "CENTIMILLISECONDS_PER_SECOND",
     "MICROSECONDS_PER_CENTIMILLISECOND",
     "WellRecordingsNotFromSameSessionError",
+    "MIN_SUPPORTED_FILE_VERSION",
+    "UnsupportedMantarrayFileVersionError",
+    "FileAttributeNotFoundError",
 ]

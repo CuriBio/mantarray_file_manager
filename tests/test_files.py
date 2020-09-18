@@ -5,8 +5,13 @@ import os
 from uuid import UUID
 
 import h5py
+from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
+from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
+from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
+from mantarray_file_manager import UnsupportedMantarrayFileVersionError
+from mantarray_file_manager import USER_ACCOUNT_ID_UUID
 from mantarray_file_manager import WellFile
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
@@ -23,6 +28,17 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1__2,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+
+def test_WellFile__opens_and_get_file_version():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
+    )
+    assert wf.get_file_version() == "0.2.1"
 
 
 def test_WellFile__opens_and_get_well_name():
@@ -150,13 +166,42 @@ def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
 
 
 def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
-    assert (
-        isinstance(
-            generic_well_file_0_3_1.get_h5_file(),
-            h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
-        )
-        is True
+    assert isinstance(generic_well_file_0_3_1.get_h5_file(), h5py.File) is True
+
+
+def test_WellFile__get_h5_attribute__raises_error_if_attribute_is_not_found():
+    file_ver = "0.3.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20123456__2020_08_17_145752__A1.h5",
     )
+    wf = WellFile(file_path)
+    test_attr = "fake_attr"
+    with pytest.raises(FileAttributeNotFoundError) as excinfo:
+        wf.get_h5_attribute(test_attr)
+    assert file_ver in str(excinfo.value)
+    assert file_path in str(excinfo.value)
+    assert test_attr in str(excinfo.value)
+
+
+def test_WellFile__get_h5_attribute__raises_error_with_UUID_description_if_UUID_attribute_is_not_found():
+    file_ver = "0.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20001100__2020_07_15_172203__A4.h5",
+    )
+    wf = WellFile(file_path)
+    test_attr = USER_ACCOUNT_ID_UUID
+    test_attr_description = METADATA_UUID_DESCRIPTIONS[USER_ACCOUNT_ID_UUID]
+    with pytest.raises(FileAttributeNotFoundError) as excinfo:
+        wf.get_h5_attribute(str(test_attr))
+    assert file_ver in str(excinfo.value)
+    assert file_path in str(excinfo.value)
+    assert test_attr_description in str(excinfo.value)
 
 
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():
@@ -304,3 +349,58 @@ def test_PlateRecording__get_well_indices__returns_sorted_set(
 ):
     pr = PlateRecording([generic_well_file_0_3_1, generic_well_file_0_3_1__2])
     assert pr.get_well_indices() == (4, 9)
+
+
+def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "M120171010__2020_07_22_201922",
+            "M120171010__2020_07_22_201922__A1.h5",
+        )
+    )
+
+    assert wf.get_h5_attribute("File Format Version") == "0.1.1"
+    assert isinstance(wf.get_h5_file(), h5py.File)
+    assert "M120171010__2020_07_22_201922__A1" in wf.get_file_name()
+    assert wf.get_unique_recording_key() == (
+        "M120171010",
+        datetime.datetime(
+            2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc
+        ),
+    )
+    assert wf.get_well_name() == "A1"
+    assert wf.get_well_index() == 0
+    assert wf.get_plate_barcode() == "M120171010"
+    assert wf.get_user_account() == UUID("bab42d5a-25ab-4b88-90ca-55914b55cf58")
+    assert wf.get_timestamp_of_beginning_of_data_acquisition() == datetime.datetime(
+        2020, 7, 22, 20, 19, 20, 328587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_customer_account() == UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
+    assert wf.get_mantarray_serial_number() == "M02001900"
+    assert wf.get_begin_recording() == datetime.datetime(
+        2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_timestamp_of_first_tissue_data_point() == datetime.datetime(
+        2020, 7, 22, 20, 19, 22, 536587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_tissue_sampling_period_microseconds() == 9600
+    assert wf.get_recording_start_index() == 220000
+    assert isinstance(wf.get_raw_tissue_reading(), np.ndarray)
+
+
+def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
+    with pytest.raises(
+        UnsupportedMantarrayFileVersionError,
+        match=f"Mantarray files of version 0.1 are not supported. The minimum supported file version is {MIN_SUPPORTED_FILE_VERSION}",
+    ):
+        PlateRecording(
+            [
+                os.path.join(
+                    PATH_OF_CURRENT_FILE,
+                    "h5",
+                    "v0.1",
+                    "MA20001100__2020_07_15_172203__A4.h5",
+                )
+            ]
+        )
