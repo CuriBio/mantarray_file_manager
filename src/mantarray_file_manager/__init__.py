@@ -37,6 +37,7 @@ from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
 from .constants import WELL_ROW_UUID
 from .constants import XEM_SERIAL_NUMBER_UUID
+from .exceptions import FileAttributeNotFoundError
 from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 from .files import PlateRecording
@@ -89,4 +90,5 @@ __all__ = [
     "WellRecordingsNotFromSameSessionError",
     "MIN_SUPPORTED_FILE_VERSION",
     "UnsupportedMantarrayFileVersionError",
+    "FileAttributeNotFoundError",
 ]

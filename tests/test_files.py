@@ -5,6 +5,7 @@ import os
 from uuid import UUID
 
 import h5py
+from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
 from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
@@ -25,6 +26,17 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1__2,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+
+def test_WellFile__opens_and_get_file_version():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
+    )
+    assert wf.get_file_version() == "0.2.1"
 
 
 def test_WellFile__opens_and_get_well_name():
@@ -152,13 +164,24 @@ def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
 
 
 def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
-    assert (
-        isinstance(
-            generic_well_file_0_3_1.get_h5_file(),
-            h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
-        )
-        is True
+    assert isinstance(generic_well_file_0_3_1.get_h5_file(), h5py.File) is True
+
+
+def test_WellFile__get_h5_attribute__raises_error_if_attribute_is_not_found():
+    file_ver = "0.3.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20123456__2020_08_17_145752__A1.h5",
     )
+    wf = WellFile(file_path)
+    test_attr = "fake_attr"
+    with pytest.raises(
+        FileAttributeNotFoundError,
+        match=f"The metadata attribute {test_attr} was not found in this file. File format version {file_ver}, filepath: {file_path}",
+    ):
+        wf.get_h5_attribute(test_attr)
 
 
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():

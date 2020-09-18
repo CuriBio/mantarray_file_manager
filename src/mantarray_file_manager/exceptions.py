@@ -20,3 +20,12 @@ class UnsupportedMantarrayFileVersionError(Exception):
         super().__init__(
             f"Mantarray files of version {file_version} are not supported. The minimum supported file version is {MIN_SUPPORTED_FILE_VERSION}"
         )
+
+
+class FileAttributeNotFoundError(Exception):
+    def __init__(
+        self, attr_name: str, file_version: str, file_path: str,
+    ):
+        super().__init__(
+            f"The metadata attribute {attr_name} was not found in this file. File format version {file_version}, filepath: {file_path}"
+        )
