@@ -121,7 +121,8 @@ def _extract_datetime_from_h5(
     open_h5_file: h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
     metadata_uuid: UUID,
 ) -> datetime.datetime:
-    if str(metadata_uuid) not in open_h5_file.attrs:
+    file_version_str = open_h5_file.attrs["File Format Version"]
+    if file_version_str.split(".") < VersionInfo.parse("0.2.1"):
         if metadata_uuid == UTC_BEGINNING_RECORDING_UUID:
             # Tanner (9/17/20): The use of this proxy value is justified by the fact that there is a 15 second delay between when data is recorded and when the GUI displays it, and because the GUI will send the timestamp of when the recording button is pressed.
             acquisition_timestamp_str = open_h5_file.attrs[
@@ -138,9 +139,6 @@ def _extract_datetime_from_h5(
             return datetime.datetime.strptime(
                 timestamp_str, DATETIME_STR_FORMAT
             ).replace(tzinfo=datetime.timezone.utc)
-        raise NotImplementedError(
-            f"This UUID is not used in Mantarray Files: {str(metadata_uuid)}"
-        )
 
     timestamp_str = open_h5_file.attrs[str(metadata_uuid)]
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
