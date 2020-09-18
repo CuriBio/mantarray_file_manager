@@ -15,6 +15,7 @@ from mantarray_file_manager import MANTARRAY_NICKNAME_UUID
 from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
 from mantarray_file_manager import MICROSECONDS_PER_CENTIMILLISECOND
+from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
 from mantarray_file_manager import REFERENCE_VOLTAGE_UUID
@@ -45,6 +46,10 @@ def test_time_conversion():
     assert DATETIME_STR_FORMAT == "%Y-%m-%d %H:%M:%S.%f"
     assert CENTIMILLISECONDS_PER_SECOND == 1e5
     assert MICROSECONDS_PER_CENTIMILLISECOND == 10
+
+
+def test_versions():
+    assert MIN_SUPPORTED_FILE_VERSION == "0.1.1"
 
 
 def test_metadata_UUIDs():

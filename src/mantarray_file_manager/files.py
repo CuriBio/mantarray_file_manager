@@ -15,12 +15,14 @@ from uuid import UUID
 import h5py
 from nptyping import NDArray
 import numpy as np
+from semver import VersionInfo
 from stdlib_utils import get_current_file_abs_directory
 
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
+from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import PLATE_BARCODE_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
@@ -30,9 +32,18 @@ from .constants import UTC_BEGINNING_RECORDING_UUID
 from .constants import UTC_FIRST_TISSUE_DATA_POINT_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
+from .exceptions import FileAttributeNotFoundError
+from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+
+def _get_file_attr(h5_file: h5py.File, attr_name: str, file_version: str) -> Any:
+    if attr_name not in h5_file.attrs:
+        file_path = h5_file.filename
+        raise FileAttributeNotFoundError(attr_name, file_version, file_path)
+    return h5_file.attrs[attr_name]
 
 
 def get_unique_files_from_directory(directory: str) -> List[str]:
@@ -48,32 +59,25 @@ def get_unique_files_from_directory(directory: str) -> List[str]:
 
     for path, _, files in os.walk(directory):
         for name in files:
-            if name.endswith(".h5"):
-                unique_files.append(os.path.join(path, name))
+            if not name.endswith(".h5"):
+                continue
 
-    for file in unique_files:
-        well = WellFile(file)
-        index = well.get_well_index()
-        barcode = well.get_plate_barcode()
-        start_time = well.get_begin_recording()
+            file = os.path.join(path, name)
+            well = WellFile(file)
+            index = well.get_well_index()
+            barcode = well.get_plate_barcode()
+            start_time = well.get_begin_recording()
 
-        duplicates = []
-
-        unique_files.remove(file)
-
-        for item in unique_files:
-            new_well = WellFile(item)
-            if (
-                new_well.get_well_index() == index
-                and new_well.get_plate_barcode() == barcode
-                and new_well.get_begin_recording() == start_time
-            ):
-                duplicates.append(item)
-
-        unique_files.append(file)
-
-        for duplicate_file in duplicates:
-            unique_files.remove(duplicate_file)
+            for item in unique_files:
+                new_well = WellFile(item)
+                if (
+                    new_well.get_well_index() == index
+                    and new_well.get_plate_barcode() == barcode
+                    and new_well.get_begin_recording() == start_time
+                ):
+                    break
+            else:
+                unique_files.append(file)
 
     return unique_files
 
@@ -122,10 +126,29 @@ def get_specified_files(
 
 
 def _extract_datetime_from_h5(
-    open_h5_file: h5py._hl.files.File,  # pylint: disable=protected-access # WTF pylint...this is a type definition
-    metadata_uuid: UUID,
+    open_h5_file: h5py.File, file_version: str, metadata_uuid: UUID,
 ) -> datetime.datetime:
-    timestamp_str = open_h5_file.attrs[str(metadata_uuid)]
+    if file_version.split(".") < VersionInfo.parse("0.2.1"):
+        if metadata_uuid == UTC_BEGINNING_RECORDING_UUID:
+            # Tanner (9/17/20): The use of this proxy value is justified by the fact that there is a 15 second delay between when data is recorded and when the GUI displays it, and because the GUI will send the timestamp of when the recording button is pressed.
+            acquisition_timestamp_str = _get_file_attr(
+                open_h5_file, str(UTC_BEGINNING_DATA_ACQUISTION_UUID), file_version,
+            )
+            begin_recording = datetime.datetime.strptime(
+                acquisition_timestamp_str, DATETIME_STR_FORMAT
+            ).replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(seconds=15)
+            return begin_recording
+        if metadata_uuid == UTC_FIRST_TISSUE_DATA_POINT_UUID:
+            # Tanner (9/17/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
+            metadata_name = "UTC Timestamp of Beginning of Recorded Tissue Sensor Data"
+            timestamp_str = _get_file_attr(
+                open_h5_file, str(metadata_name), file_version,
+            )
+            return datetime.datetime.strptime(
+                timestamp_str, DATETIME_STR_FORMAT
+            ).replace(tzinfo=datetime.timezone.utc)
+
+    timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version,)
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
         tzinfo=datetime.timezone.utc
     )
@@ -142,18 +165,20 @@ class WellFile:
     """
 
     def __init__(self, file_name: str) -> None:
-        self._h5_file: h5py._hl.files.File = h5py.File(
+        self._h5_file: h5py.File = h5py.File(
             file_name, "r",
         )
         self._file_name = file_name
+        self._file_version: str = self._h5_file.attrs["File Format Version"]
 
-    def get_h5_file(
-        self,
-    ) -> h5py._hl.files.File:  # pylint: disable=protected-access # WTF pylint...this is a type definition
+    def get_h5_file(self) -> h5py.File:
         return self._h5_file
 
     def get_file_name(self) -> str:
         return self._file_name
+
+    def get_file_version(self) -> str:
+        return self._file_version
 
     def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
         barcode = self.get_plate_barcode()
@@ -161,41 +186,65 @@ class WellFile:
         return barcode, start_time
 
     def get_h5_attribute(self, attr_name: str) -> Any:
-        return self._h5_file.attrs[attr_name]
+        return _get_file_attr(self._h5_file, attr_name, self._file_version)
 
     def get_well_name(self) -> str:
-        return str(self._h5_file.attrs[str(WELL_NAME_UUID)])
+        return str(
+            _get_file_attr(self._h5_file, str(WELL_NAME_UUID), self._file_version,)
+        )
 
     def get_well_index(self) -> int:
-        return int(self._h5_file.attrs[str(WELL_INDEX_UUID)])
+        return int(
+            _get_file_attr(self._h5_file, str(WELL_INDEX_UUID), self._file_version,)
+        )
 
     def get_plate_barcode(self) -> str:
-        return str(self._h5_file.attrs[str(PLATE_BARCODE_UUID)])
+        return str(
+            _get_file_attr(self._h5_file, str(PLATE_BARCODE_UUID), self._file_version,)
+        )
 
     def get_user_account(self) -> UUID:
-        return UUID(self._h5_file.attrs[str(USER_ACCOUNT_ID_UUID)])
+        return UUID(
+            _get_file_attr(
+                self._h5_file, str(USER_ACCOUNT_ID_UUID), self._file_version,
+            )
+        )
 
     def get_timestamp_of_beginning_of_data_acquisition(self) -> datetime.datetime:
         return _extract_datetime_from_h5(
-            self._h5_file, UTC_BEGINNING_DATA_ACQUISTION_UUID
+            self._h5_file, self._file_version, UTC_BEGINNING_DATA_ACQUISTION_UUID
         )
 
     def get_customer_account(self) -> UUID:
-        return UUID(self._h5_file.attrs[str(CUSTOMER_ACCOUNT_ID_UUID)])
+        return UUID(
+            _get_file_attr(
+                self._h5_file, str(CUSTOMER_ACCOUNT_ID_UUID), self._file_version,
+            )
+        )
 
     def get_mantarray_serial_number(self) -> str:
-        return str(self._h5_file.attrs[str(MANTARRAY_SERIAL_NUMBER_UUID)])
+        return str(
+            _get_file_attr(
+                self._h5_file, str(MANTARRAY_SERIAL_NUMBER_UUID), self._file_version,
+            )
+        )
 
     def get_begin_recording(self) -> datetime.datetime:
-        return _extract_datetime_from_h5(self._h5_file, UTC_BEGINNING_RECORDING_UUID)
+        return _extract_datetime_from_h5(
+            self._h5_file, self._file_version, UTC_BEGINNING_RECORDING_UUID
+        )
 
     def get_timestamp_of_first_tissue_data_point(self) -> datetime.datetime:
         return _extract_datetime_from_h5(
-            self._h5_file, UTC_FIRST_TISSUE_DATA_POINT_UUID
+            self._h5_file, self._file_version, UTC_FIRST_TISSUE_DATA_POINT_UUID
         )
 
     def get_tissue_sampling_period_microseconds(self) -> int:
-        return int(self._h5_file.attrs[str(TISSUE_SAMPLING_PERIOD_UUID)])
+        return int(
+            _get_file_attr(
+                self._h5_file, str(TISSUE_SAMPLING_PERIOD_UUID), self._file_version,
+            )
+        )
 
     def get_recording_start_index(self) -> int:
         """Get the time index when recording was requested.
@@ -204,7 +253,11 @@ class WellFile:
         start of data acquisition that was displayed on the screen when
         the user pressed the Record button.
         """
-        return int(self._h5_file.attrs[str(START_RECORDING_TIME_INDEX_UUID)])
+        return int(
+            _get_file_attr(
+                self._h5_file, str(START_RECORDING_TIME_INDEX_UUID), self._file_version,
+            )
+        )
 
     def get_raw_tissue_reading(self) -> NDArray[(2, Any), int]:
         """Get a value vs time array.
@@ -259,11 +312,15 @@ class PlateRecording:
     def __init__(self, file_paths: Sequence[Union[str, WellFile]]) -> None:
         self._files: List[WellFile] = list()
         self._wells_by_index: Dict[int, WellFile] = dict()
+        min_supported_version = VersionInfo.parse(MIN_SUPPORTED_FILE_VERSION)
         for iter_file_path in file_paths:
 
             well_file = iter_file_path
             if isinstance(well_file, str):
                 well_file = WellFile(well_file)
+            file_version_str = well_file.get_file_version()
+            if file_version_str.split(".") < min_supported_version:
+                raise UnsupportedMantarrayFileVersionError(file_version_str)
             if len(self._files) > 0:
                 new_session_key = well_file.get_unique_recording_key()
                 old_file = self._files[0]

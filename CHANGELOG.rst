@@ -1,6 +1,13 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.3.0 (2020-09-18)
+------------------
+
+- Added backwards compatibility with Mantarray H5 file v0.1.1.
+- Added upload of wheel to PyPI.
+
+
 0.2.1 (2020-09-04)
 ------------------
 
