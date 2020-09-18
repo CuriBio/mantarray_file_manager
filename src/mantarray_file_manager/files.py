@@ -15,12 +15,14 @@ from uuid import UUID
 import h5py
 from nptyping import NDArray
 import numpy as np
+from semver import VersionInfo
 from stdlib_utils import get_current_file_abs_directory
 
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
+from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import PLATE_BARCODE_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
@@ -30,6 +32,7 @@ from .constants import UTC_BEGINNING_RECORDING_UUID
 from .constants import UTC_FIRST_TISSUE_DATA_POINT_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
+from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
@@ -273,11 +276,15 @@ class PlateRecording:
     def __init__(self, file_paths: Sequence[Union[str, WellFile]]) -> None:
         self._files: List[WellFile] = list()
         self._wells_by_index: Dict[int, WellFile] = dict()
+        min_supported_version = VersionInfo.parse(MIN_SUPPORTED_FILE_VERSION)
         for iter_file_path in file_paths:
 
             well_file = iter_file_path
             if isinstance(well_file, str):
                 well_file = WellFile(well_file)
+            file_version_str = well_file.get_h5_attribute("File Format Version")
+            if file_version_str.split(".") < min_supported_version:
+                raise UnsupportedMantarrayFileVersionError(file_version_str)
             if len(self._files) > 0:
                 new_session_key = well_file.get_unique_recording_key()
                 old_file = self._files[0]

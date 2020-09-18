@@ -6,7 +6,9 @@ from uuid import UUID
 
 import h5py
 from mantarray_file_manager import files
+from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
+from mantarray_file_manager import UnsupportedMantarrayFileVersionError
 from mantarray_file_manager import WellFile
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
@@ -342,3 +344,20 @@ def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
     assert wf.get_tissue_sampling_period_microseconds() == 9600
     assert wf.get_recording_start_index() == 220000
     assert isinstance(wf.get_raw_tissue_reading(), np.ndarray)
+
+
+def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
+    with pytest.raises(
+        UnsupportedMantarrayFileVersionError,
+        match=f"Mantarray files of version 0.1 are not supported. The minimum supported file version is {MIN_SUPPORTED_FILE_VERSION}",
+    ):
+        PlateRecording(
+            [
+                os.path.join(
+                    PATH_OF_CURRENT_FILE,
+                    "h5",
+                    "v0.1",
+                    "MA20001100__2020_07_15_172203__A4.h5",
+                )
+            ]
+        )
