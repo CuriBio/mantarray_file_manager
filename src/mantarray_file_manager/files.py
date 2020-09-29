@@ -291,10 +291,10 @@ class WellFile:
         times = np.arange(len(tissue_data), dtype=np.int32) * time_step
         len_time = len(times)
 
-        data = np.zeros((2, len_time), dtype=np.int32)
-        for i in range(len_time):
-            data[0, i] = times[i] + time_delta_centimilliseconds
-            data[1, i] = tissue_data[i]
+        data = np.array(
+            (times[:len_time] + time_delta_centimilliseconds, tissue_data[:len_time]),
+            dtype=np.int32,
+        )
 
         return data
 
