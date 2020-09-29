@@ -173,7 +173,6 @@ class WellFile:
         )
         self._file_name = file_name
         self._file_version: str = self._h5_file.attrs["File Format Version"]
-        self._h5_attrs: List[str] = [attr for attr in self._h5_file.attrs]
         self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
         self._raw_construct_reading: Optional[NDArray[(2, Any), int]] = None
 
