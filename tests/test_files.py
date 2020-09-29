@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import time
 from uuid import UUID
 
 import h5py
@@ -404,3 +405,18 @@ def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
                 )
             ]
         )
+
+
+def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
+    # start:                        63748857.45
+    # remove slow loop:              1382431.61
+    # cache raw tissue reading:        53700.78
+
+    num_iterations = 100
+    start = time.perf_counter_ns()
+    for _ in range(num_iterations):
+        generic_well_file_0_3_1.get_raw_tissue_reading()
+    dur = time.perf_counter_ns() - start
+    dur_per_iter = dur / num_iterations
+    # print(dur_per_iter)
+    assert dur_per_iter < 10000000

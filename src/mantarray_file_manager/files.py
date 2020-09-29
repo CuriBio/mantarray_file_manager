@@ -6,6 +6,7 @@ import os
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Sequence
 from typing import Set
 from typing import Tuple
@@ -148,7 +149,7 @@ def _extract_datetime_from_h5(
                 timestamp_str, DATETIME_STR_FORMAT
             ).replace(tzinfo=datetime.timezone.utc)
 
-    timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version,)
+    timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version)
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
         tzinfo=datetime.timezone.utc
     )
@@ -170,6 +171,8 @@ class WellFile:
         )
         self._file_name = file_name
         self._file_version: str = self._h5_file.attrs["File Format Version"]
+        self._h5_attrs: List[str] = [attr for attr in self._h5_file.attrs]
+        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
 
     def get_h5_file(self) -> h5py.File:
         return self._h5_file
@@ -267,36 +270,40 @@ class WellFile:
 
         Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
         """
-        recording_start_index_useconds = (
-            self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
-        )
-        timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
-            microseconds=recording_start_index_useconds
-        )
-        time_delta = (
-            self.get_timestamp_of_first_tissue_data_point() - timestamp_of_start_index
-        )
+        if self._raw_tissue_reading is None:
+            recording_start_index_useconds = (
+                self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
+            )
+            timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
+                microseconds=recording_start_index_useconds
+            )
+            time_delta = (
+                self.get_timestamp_of_first_tissue_data_point()
+                - timestamp_of_start_index
+            )
 
-        time_delta_centimilliseconds = int(
-            time_delta
-            / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
-        )
+            time_delta_centimilliseconds = int(
+                time_delta
+                / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
+            )
 
-        time_step = int(
-            self.get_tissue_sampling_period_microseconds()
-            / MICROSECONDS_PER_CENTIMILLISECOND
-        )
-        tissue_data = self._h5_file["tissue_sensor_readings"]
+            time_step = int(
+                self.get_tissue_sampling_period_microseconds()
+                / MICROSECONDS_PER_CENTIMILLISECOND
+            )
+            tissue_data = self._h5_file["tissue_sensor_readings"]
 
-        times = np.arange(len(tissue_data), dtype=np.int32) * time_step
-        len_time = len(times)
+            times = np.arange(len(tissue_data), dtype=np.int32) * time_step
+            len_time = len(times)
 
-        data = np.array(
-            (times[:len_time] + time_delta_centimilliseconds, tissue_data[:len_time]),
-            dtype=np.int32,
-        )
-
-        return data
+            self._raw_tissue_reading = np.array(
+                (
+                    times[:len_time] + time_delta_centimilliseconds,
+                    tissue_data[:len_time],
+                ),
+                dtype=np.int32,
+            )
+        return self._raw_tissue_reading
 
 
 class PlateRecording:
