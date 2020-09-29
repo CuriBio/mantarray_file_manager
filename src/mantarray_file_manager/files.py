@@ -312,7 +312,7 @@ class WellFile:
             len_time = len(times)
 
             self._raw_tissue_reading = np.array(
-                (times + time_delta_centimilliseconds, tissue_data[:len_time],),
+                (times + time_delta_centimilliseconds, tissue_data[:len_time]),
                 dtype=np.int32,
             )
         return self._raw_tissue_reading
@@ -351,7 +351,7 @@ class WellFile:
             len_time = len(times)
 
             self._raw_construct_reading = np.array(
-                (times + time_delta_centimilliseconds, ref_data[:len_time],),
+                (times + time_delta_centimilliseconds, ref_data[:len_time]),
                 dtype=np.int32,
             )
         return self._raw_construct_reading

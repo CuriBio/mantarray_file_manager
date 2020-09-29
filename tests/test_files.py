@@ -165,7 +165,10 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
 ):
 
     arr = generic_well_file_0_3_1.get_raw_reference_reading()
-    assert arr.shape == (2, 6706)
+    assert arr.shape == (
+        2,
+        6706,  # Tanner (9/29/20): The reason this number is not 4x the number of tissue readings from the same file is likely due to an issue with with Mantarray Desktop App recording duplicate reference data
+    )
     assert arr.dtype == np.int32
     assert arr[0, 0] == 40
     assert arr[1, 0] == -1429419
