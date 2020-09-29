@@ -1,6 +1,13 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.4.0 (2020-09-29)
+------------------
+
+- Added performance improvements to ``get_raw_tissue_reading``.
+- Added access to reference data through ``get_raw_reference_reading``.
+
+
 0.3.0 (2020-09-18)
 ------------------
 
