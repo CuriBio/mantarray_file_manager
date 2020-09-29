@@ -25,11 +25,13 @@ from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import PLATE_BARCODE_UUID
+from .constants import REF_SAMPLING_PERIOD_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
 from .constants import USER_ACCOUNT_ID_UUID
 from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
+from .constants import UTC_FIRST_REF_DATA_POINT_UUID
 from .constants import UTC_FIRST_TISSUE_DATA_POINT_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
@@ -173,6 +175,7 @@ class WellFile:
         self._file_version: str = self._h5_file.attrs["File Format Version"]
         self._h5_attrs: List[str] = [attr for attr in self._h5_file.attrs]
         self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
+        self._raw_construct_reading: Optional[NDArray[(2, Any), int]] = None
 
     def get_h5_file(self) -> h5py.File:
         return self._h5_file
@@ -242,10 +245,22 @@ class WellFile:
             self._h5_file, self._file_version, UTC_FIRST_TISSUE_DATA_POINT_UUID
         )
 
+    def get_timestamp_of_first_ref_data_point(self) -> datetime.datetime:
+        return _extract_datetime_from_h5(
+            self._h5_file, self._file_version, UTC_FIRST_REF_DATA_POINT_UUID
+        )
+
     def get_tissue_sampling_period_microseconds(self) -> int:
         return int(
             _get_file_attr(
                 self._h5_file, str(TISSUE_SAMPLING_PERIOD_UUID), self._file_version,
+            )
+        )
+
+    def get_reference_sampling_period_microseconds(self) -> int:
+        return int(
+            _get_file_attr(
+                self._h5_file, str(REF_SAMPLING_PERIOD_UUID), self._file_version,
             )
         )
 
@@ -297,13 +312,49 @@ class WellFile:
             len_time = len(times)
 
             self._raw_tissue_reading = np.array(
-                (
-                    times[:len_time] + time_delta_centimilliseconds,
-                    tissue_data[:len_time],
-                ),
+                (times + time_delta_centimilliseconds, tissue_data[:len_time],),
                 dtype=np.int32,
             )
         return self._raw_tissue_reading
+
+    def get_raw_reference_reading(self) -> NDArray[(2, Any), int]:
+        """Get a reference value vs time array.
+
+        Time (centi-milliseconds) is first dimension, reference value is second
+        dimension.
+
+        Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
+        """
+        if self._raw_construct_reading is None:
+            recording_start_index_useconds = (
+                self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
+            )
+            timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
+                microseconds=recording_start_index_useconds
+            )
+            time_delta = (
+                self.get_timestamp_of_first_ref_data_point() - timestamp_of_start_index
+            )
+
+            time_delta_centimilliseconds = int(
+                time_delta
+                / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
+            )
+
+            time_step = int(
+                self.get_reference_sampling_period_microseconds()
+                / MICROSECONDS_PER_CENTIMILLISECOND
+            )
+            ref_data = self._h5_file["reference_sensor_readings"]
+
+            times = np.arange(len(ref_data), dtype=np.int32) * time_step
+            len_time = len(times)
+
+            self._raw_construct_reading = np.array(
+                (times + time_delta_centimilliseconds, ref_data[:len_time],),
+                dtype=np.int32,
+            )
+        return self._raw_construct_reading
 
 
 class PlateRecording:
