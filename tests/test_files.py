@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import time
 from uuid import UUID
 
 import h5py
@@ -157,6 +158,26 @@ def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     expected_timestep = 960  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
     assert arr[0, 1] - arr[0, 0] == expected_timestep
     assert arr[1, 150] == 817496
+
+
+def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_0_3_1,
+):
+
+    arr = generic_well_file_0_3_1.get_raw_reference_reading()
+    assert arr.shape == (
+        2,
+        6706,  # Tanner (9/29/20): The reason this number is not the same as the number of tissue readings from the same file is likely due to an issue with with Mantarray Desktop App recording duplicate reference data
+    )
+    assert arr.dtype == np.int32
+    assert arr[0, 0] == 40
+    assert arr[1, 0] == -1429419
+
+    expected_timestep = (
+        960 // 4
+    )  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+    assert arr[1, 150] == 255013
 
 
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
@@ -404,3 +425,31 @@ def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
                 )
             ]
         )
+
+
+def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
+    # start:                        63748857.45
+    # remove slow loop:              1382431.61
+    # cache raw tissue reading:        47306.83
+
+    num_iterations = 100
+    start = time.perf_counter_ns()
+    for _ in range(num_iterations):
+        generic_well_file_0_3_1.get_raw_tissue_reading()
+    dur = time.perf_counter_ns() - start
+    dur_per_iter = dur / num_iterations
+    # print(dur_per_iter)
+    assert dur_per_iter < 10000000
+
+
+def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
+    # start:                           48397.32
+
+    num_iterations = 100
+    start = time.perf_counter_ns()
+    for _ in range(num_iterations):
+        generic_well_file_0_3_1.get_raw_reference_reading()
+    dur = time.perf_counter_ns() - start
+    dur_per_iter = dur / num_iterations
+    # print(dur_per_iter)
+    assert dur_per_iter < 10000000
