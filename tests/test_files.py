@@ -148,7 +148,6 @@ def test_WellFile__opens_and_get_begin_recording():
 def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     generic_well_file_0_3_1,
 ):
-
     arr = generic_well_file_0_3_1.get_raw_tissue_reading()
     assert arr.shape == (2, 370)
     assert arr.dtype == np.int32
@@ -163,7 +162,6 @@ def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
 def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0(
     generic_well_file_0_3_1,
 ):
-
     arr = generic_well_file_0_3_1.get_raw_reference_reading()
     assert arr.shape == (
         2,
@@ -404,6 +402,9 @@ def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
     )
     assert wf.get_timestamp_of_first_tissue_data_point() == datetime.datetime(
         2020, 7, 22, 20, 19, 22, 536587, tzinfo=datetime.timezone.utc
+    )
+    assert wf.get_timestamp_of_first_ref_data_point() == datetime.datetime(
+        2020, 7, 22, 20, 19, 22, 530587, tzinfo=datetime.timezone.utc
     )
     assert wf.get_tissue_sampling_period_microseconds() == 9600
     assert wf.get_recording_start_index() == 220000
