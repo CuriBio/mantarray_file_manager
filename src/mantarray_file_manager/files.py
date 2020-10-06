@@ -150,6 +150,17 @@ def _extract_datetime_from_h5(
             return datetime.datetime.strptime(
                 timestamp_str, DATETIME_STR_FORMAT
             ).replace(tzinfo=datetime.timezone.utc)
+        if metadata_uuid == UTC_FIRST_REF_DATA_POINT_UUID:
+            # Tanner (10/5/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
+            metadata_name = (
+                "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
+            )
+            timestamp_str = _get_file_attr(
+                open_h5_file, str(metadata_name), file_version,
+            )
+            return datetime.datetime.strptime(
+                timestamp_str, DATETIME_STR_FORMAT
+            ).replace(tzinfo=datetime.timezone.utc)
 
     timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version)
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
