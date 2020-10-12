@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes and functinos for finding and managing files."""
+"""Classes and functions for finding and managing files."""
 import datetime
 from glob import glob
 import os
