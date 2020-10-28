@@ -185,7 +185,7 @@ class WellFile:
         self._file_name = file_name
         self._file_version: str = self._h5_file.attrs["File Format Version"]
         self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
-        self._raw_construct_reading: Optional[NDArray[(2, Any), int]] = None
+        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
 
     def get_h5_file(self) -> h5py.File:
         return self._h5_file
@@ -335,7 +335,7 @@ class WellFile:
 
         Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
         """
-        if self._raw_construct_reading is None:
+        if self._raw_ref_reading is None:
             recording_start_index_useconds = (
                 self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
             )
@@ -360,11 +360,11 @@ class WellFile:
             times = np.arange(len(ref_data), dtype=np.int32) * time_step
             len_time = len(times)
 
-            self._raw_construct_reading = np.array(
+            self._raw_ref_reading = np.array(
                 (times + time_delta_centimilliseconds, ref_data[:len_time]),
                 dtype=np.int32,
             )
-        return self._raw_construct_reading
+        return self._raw_ref_reading
 
 
 class PlateRecording:
