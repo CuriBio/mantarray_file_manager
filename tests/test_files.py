@@ -226,6 +226,24 @@ def test_WellFile__get_h5_attribute__raises_error_with_UUID_and_description_if_U
     assert "no UUID given" not in str(excinfo.value)
 
 
+def test_WellFile__get_h5_attribute__raises_error_with_unrecognized_UUID__if_UUID_attribute_is_not_found():
+    file_ver = "0.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20001100__2020_07_15_172203__A4.h5",
+    )
+    wf = WellFile(file_path)
+    test_uuid = UUID("e07bae2d-c927-490f-876b-a7a79c2369e7")
+    with pytest.raises(FileAttributeNotFoundError) as excinfo:
+        wf.get_h5_attribute(str(test_uuid))
+    assert str(test_uuid) in str(excinfo.value)
+    assert file_ver in str(excinfo.value)
+    assert file_path in str(excinfo.value)
+    assert "Unrecognized UUID" in str(excinfo.value)
+
+
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():
     pr = PlateRecording.from_directory(
         os.path.join(PATH_OF_CURRENT_FILE, "h5", "v0.3.1")
