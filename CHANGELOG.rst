@@ -1,10 +1,10 @@
 Changelog for Mantarray File Manager
 ====================================
 
-0.4.2 (2020-10-28)
+0.4.2 (2020-11-10)
 ------------------
 
-- Added UUID to FileAttributeNotFoundError.
+- Added raw UUID to FileAttributeNotFoundError if one is given.
 
 
 0.4.1 (2020-10-05)
