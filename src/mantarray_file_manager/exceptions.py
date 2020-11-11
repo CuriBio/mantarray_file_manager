@@ -27,7 +27,7 @@ class UnsupportedMantarrayFileVersionError(Exception):
 
 
 class FileAttributeNotFoundError(Exception):
-    """Error raised if attempting to access a non-existen attribute."""
+    """Error raised if attempting to access a non-existent attribute."""
 
     def __init__(
         self,
