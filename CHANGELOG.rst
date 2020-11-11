@@ -1,10 +1,16 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.4.2 (2020-11-10)
+------------------
+
+- Added raw UUID to FileAttributeNotFoundError if one is given.
+
+
 0.4.1 (2020-10-05)
 ------------------
 
-- Fixed compatibility with H5 files of v0.1.1
+- Fixed compatibility with H5 files of v0.1.1.
 
 
 0.4.0 (2020-09-29)
@@ -31,5 +37,5 @@ Changelog for Mantarray File Manager
 0.2 (2020-09-02)
 ------------------
 
-- Added ability to access H5 file directly in WellFile
+- Added ability to access H5 file directly in WellFile.
 

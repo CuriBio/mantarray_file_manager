@@ -27,11 +27,22 @@ class UnsupportedMantarrayFileVersionError(Exception):
 
 
 class FileAttributeNotFoundError(Exception):
+    """Error raised if attempting to access a non-existent attribute."""
+
     def __init__(
-        self, attr_name: str, file_version: str, file_path: str,
+        self,
+        attr_name: str,
+        file_version: str,
+        file_path: str,
     ):
-        if is_uuid(attr_name):
-            attr_name = METADATA_UUID_DESCRIPTIONS[UUID(attr_name)]
+        try:
+            attr_description = (
+                f"{attr_name}, ({METADATA_UUID_DESCRIPTIONS[UUID(attr_name)]})"
+                if is_uuid(attr_name)
+                else f"{attr_name} (no UUID given)"
+            )
+        except KeyError:
+            attr_description = f"{attr_name} (Unrecognized UUID)"
         super().__init__(
-            f"The metadata attribute {attr_name} was not found in this file. File format version {file_version}, filepath: {file_path}"
+            f"The metadata attribute '{attr_description}' was not found in this file. File format version {file_version}, filepath: {file_path}"
         )

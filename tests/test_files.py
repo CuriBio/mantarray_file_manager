@@ -200,12 +200,13 @@ def test_WellFile__get_h5_attribute__raises_error_if_attribute_is_not_found():
     test_attr = "fake_attr"
     with pytest.raises(FileAttributeNotFoundError) as excinfo:
         wf.get_h5_attribute(test_attr)
+    assert "no UUID given" in str(excinfo.value)
     assert file_ver in str(excinfo.value)
     assert file_path in str(excinfo.value)
     assert test_attr in str(excinfo.value)
 
 
-def test_WellFile__get_h5_attribute__raises_error_with_UUID_description_if_UUID_attribute_is_not_found():
+def test_WellFile__get_h5_attribute__raises_error_with_UUID_and_description_if_UUID_attribute_is_not_found():
     file_ver = "0.1"
     file_path = os.path.join(
         PATH_OF_CURRENT_FILE,
@@ -218,9 +219,29 @@ def test_WellFile__get_h5_attribute__raises_error_with_UUID_description_if_UUID_
     test_attr_description = METADATA_UUID_DESCRIPTIONS[USER_ACCOUNT_ID_UUID]
     with pytest.raises(FileAttributeNotFoundError) as excinfo:
         wf.get_h5_attribute(str(test_attr))
+    assert str(test_attr) in str(excinfo.value)
     assert file_ver in str(excinfo.value)
     assert file_path in str(excinfo.value)
     assert test_attr_description in str(excinfo.value)
+    assert "no UUID given" not in str(excinfo.value)
+
+
+def test_WellFile__get_h5_attribute__raises_error_with_unrecognized_UUID__if_UUID_attribute_is_not_found():
+    file_ver = "0.1"
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        f"v{file_ver}",
+        "MA20001100__2020_07_15_172203__A4.h5",
+    )
+    wf = WellFile(file_path)
+    test_uuid = UUID("e07bae2d-c927-490f-876b-a7a79c2369e7")
+    with pytest.raises(FileAttributeNotFoundError) as excinfo:
+        wf.get_h5_attribute(str(test_uuid))
+    assert str(test_uuid) in str(excinfo.value)
+    assert file_ver in str(excinfo.value)
+    assert file_path in str(excinfo.value)
+    assert "Unrecognized UUID" in str(excinfo.value)
 
 
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():
@@ -350,7 +371,10 @@ def test_PlateRecording__raises_error_if_files_not_from_same_session(
 
 def test_PlateRecording__can_init_from_filepath_or_wellfile(generic_well_file_0_3_1):
     file_path = os.path.join(
-        PATH_OF_CURRENT_FILE, "h5", "v0.3.1", "MA20123456__2020_08_17_145752__B4.h5",
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        "v0.3.1",
+        "MA20123456__2020_08_17_145752__B4.h5",
     )
     pr = PlateRecording((file_path, generic_well_file_0_3_1))
     assert len(pr.get_well_names()) == 2
