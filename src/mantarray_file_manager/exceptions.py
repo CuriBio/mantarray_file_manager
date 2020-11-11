@@ -30,7 +30,10 @@ class FileAttributeNotFoundError(Exception):
     """Error raised if attempting to access a non-existen attribute."""
 
     def __init__(
-        self, attr_name: str, file_version: str, file_path: str,
+        self,
+        attr_name: str,
+        file_version: str,
+        file_path: str,
     ):
         try:
             attr_description = (

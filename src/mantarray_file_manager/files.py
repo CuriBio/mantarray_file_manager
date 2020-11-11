@@ -129,13 +129,17 @@ def get_specified_files(
 
 
 def _extract_datetime_from_h5(
-    open_h5_file: h5py.File, file_version: str, metadata_uuid: UUID,
+    open_h5_file: h5py.File,
+    file_version: str,
+    metadata_uuid: UUID,
 ) -> datetime.datetime:
     if file_version.split(".") < VersionInfo.parse("0.2.1"):
         if metadata_uuid == UTC_BEGINNING_RECORDING_UUID:
             # Tanner (9/17/20): The use of this proxy value is justified by the fact that there is a 15 second delay between when data is recorded and when the GUI displays it, and because the GUI will send the timestamp of when the recording button is pressed.
             acquisition_timestamp_str = _get_file_attr(
-                open_h5_file, str(UTC_BEGINNING_DATA_ACQUISTION_UUID), file_version,
+                open_h5_file,
+                str(UTC_BEGINNING_DATA_ACQUISTION_UUID),
+                file_version,
             )
             begin_recording = datetime.datetime.strptime(
                 acquisition_timestamp_str, DATETIME_STR_FORMAT
@@ -145,7 +149,9 @@ def _extract_datetime_from_h5(
             # Tanner (9/17/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
             metadata_name = "UTC Timestamp of Beginning of Recorded Tissue Sensor Data"
             timestamp_str = _get_file_attr(
-                open_h5_file, str(metadata_name), file_version,
+                open_h5_file,
+                str(metadata_name),
+                file_version,
             )
             return datetime.datetime.strptime(
                 timestamp_str, DATETIME_STR_FORMAT
@@ -156,7 +162,9 @@ def _extract_datetime_from_h5(
                 "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
             )
             timestamp_str = _get_file_attr(
-                open_h5_file, str(metadata_name), file_version,
+                open_h5_file,
+                str(metadata_name),
+                file_version,
             )
             return datetime.datetime.strptime(
                 timestamp_str, DATETIME_STR_FORMAT
@@ -180,7 +188,8 @@ class WellFile:
 
     def __init__(self, file_name: str) -> None:
         self._h5_file: h5py.File = h5py.File(
-            file_name, "r",
+            file_name,
+            "r",
         )
         self._file_name = file_name
         self._file_version: str = self._h5_file.attrs["File Format Version"]
@@ -206,23 +215,37 @@ class WellFile:
 
     def get_well_name(self) -> str:
         return str(
-            _get_file_attr(self._h5_file, str(WELL_NAME_UUID), self._file_version,)
+            _get_file_attr(
+                self._h5_file,
+                str(WELL_NAME_UUID),
+                self._file_version,
+            )
         )
 
     def get_well_index(self) -> int:
         return int(
-            _get_file_attr(self._h5_file, str(WELL_INDEX_UUID), self._file_version,)
+            _get_file_attr(
+                self._h5_file,
+                str(WELL_INDEX_UUID),
+                self._file_version,
+            )
         )
 
     def get_plate_barcode(self) -> str:
         return str(
-            _get_file_attr(self._h5_file, str(PLATE_BARCODE_UUID), self._file_version,)
+            _get_file_attr(
+                self._h5_file,
+                str(PLATE_BARCODE_UUID),
+                self._file_version,
+            )
         )
 
     def get_user_account(self) -> UUID:
         return UUID(
             _get_file_attr(
-                self._h5_file, str(USER_ACCOUNT_ID_UUID), self._file_version,
+                self._h5_file,
+                str(USER_ACCOUNT_ID_UUID),
+                self._file_version,
             )
         )
 
@@ -234,14 +257,18 @@ class WellFile:
     def get_customer_account(self) -> UUID:
         return UUID(
             _get_file_attr(
-                self._h5_file, str(CUSTOMER_ACCOUNT_ID_UUID), self._file_version,
+                self._h5_file,
+                str(CUSTOMER_ACCOUNT_ID_UUID),
+                self._file_version,
             )
         )
 
     def get_mantarray_serial_number(self) -> str:
         return str(
             _get_file_attr(
-                self._h5_file, str(MANTARRAY_SERIAL_NUMBER_UUID), self._file_version,
+                self._h5_file,
+                str(MANTARRAY_SERIAL_NUMBER_UUID),
+                self._file_version,
             )
         )
 
@@ -263,14 +290,18 @@ class WellFile:
     def get_tissue_sampling_period_microseconds(self) -> int:
         return int(
             _get_file_attr(
-                self._h5_file, str(TISSUE_SAMPLING_PERIOD_UUID), self._file_version,
+                self._h5_file,
+                str(TISSUE_SAMPLING_PERIOD_UUID),
+                self._file_version,
             )
         )
 
     def get_reference_sampling_period_microseconds(self) -> int:
         return int(
             _get_file_attr(
-                self._h5_file, str(REF_SAMPLING_PERIOD_UUID), self._file_version,
+                self._h5_file,
+                str(REF_SAMPLING_PERIOD_UUID),
+                self._file_version,
             )
         )
 
@@ -283,7 +314,9 @@ class WellFile:
         """
         return int(
             _get_file_attr(
-                self._h5_file, str(START_RECORDING_TIME_INDEX_UUID), self._file_version,
+                self._h5_file,
+                str(START_RECORDING_TIME_INDEX_UUID),
+                self._file_version,
             )
         )
 
@@ -299,8 +332,9 @@ class WellFile:
             recording_start_index_useconds = (
                 self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
             )
-            timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
-                microseconds=recording_start_index_useconds
+            timestamp_of_start_index = (
+                self.get_timestamp_of_beginning_of_data_acquisition()
+                + datetime.timedelta(microseconds=recording_start_index_useconds)
             )
             time_delta = (
                 self.get_timestamp_of_first_tissue_data_point()
@@ -339,8 +373,9 @@ class WellFile:
             recording_start_index_useconds = (
                 self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
             )
-            timestamp_of_start_index = self.get_timestamp_of_beginning_of_data_acquisition() + datetime.timedelta(
-                microseconds=recording_start_index_useconds
+            timestamp_of_start_index = (
+                self.get_timestamp_of_beginning_of_data_acquisition()
+                + datetime.timedelta(microseconds=recording_start_index_useconds)
             )
             time_delta = (
                 self.get_timestamp_of_first_ref_data_point() - timestamp_of_start_index
