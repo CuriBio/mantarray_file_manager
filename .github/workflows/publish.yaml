@@ -30,7 +30,7 @@ jobs:
             - 3.9
         include:
           # only enable coverage on the fastest job
-          - os: "ubuntu-18.04"
+          - os: "ubuntu-20.04"
             python-version: "3.7"
             IS_FASTEST_JOB: true
 
@@ -142,7 +142,9 @@ jobs:
       - name: Confirm Sphinx Docs build correctly
         # only check Sphinx docs build on the fastest job
         if: matrix.IS_FASTEST_JOB == true
-        run: SPHINXOPTS="-W" make --directory=docs html # the -W flag treats warnings as errors to cause build failures
+        run: |
+          pip install -r docs/requirements-dev.txt
+          SPHINXOPTS="-W" make --directory=docs html # the -W flag treats warnings as errors to cause build failures
 
       - name: Run prerelease to check packaging compatibilty
         run: prerelease --no-input
@@ -165,14 +167,14 @@ jobs:
       fail-fast: false
       matrix: # if publishing pure python code, then disable all except one os and python version combination. But if publishing code that uses Cython then likely all combinations will be needed
         os:
-          - "ubuntu-18.04"
+          # - "ubuntu-18.04"
           - "ubuntu-20.04"
-          - "windows-2019"
-          - "macos-10.15"
-          - "macos-11.0"
+          # - "windows-2019"
+          # - "macos-10.15"
+          # - "macos-11.0"
         python-version:
-            - 3.7
-            - 3.8
+            # - 3.7
+            # - 3.8
             - 3.9
     name: Publish to Test PyPI for Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
