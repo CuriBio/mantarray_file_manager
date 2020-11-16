@@ -8,6 +8,7 @@ from .constants import ADC_REF_OFFSET_UUID
 from .constants import ADC_TISSUE_OFFSET_UUID
 from .constants import BACKEND_LOG_UUID
 from .constants import CENTIMILLISECONDS_PER_SECOND
+from .constants import COMPUTER_NAME_HASH
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
@@ -86,4 +87,5 @@ __all__ = [
     "UnsupportedMantarrayFileVersionError",
     "FileAttributeNotFoundError",
     "BACKEND_LOG_UUID",
+    "COMPUTER_NAME_HASH",
 ]
