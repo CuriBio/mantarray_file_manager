@@ -1,6 +1,14 @@
 Changelog for Mantarray File Manager
 ====================================
 
+
+0.4.3 (2020-11-16)
+------------------
+
+- Added UUIDs for Backend log file identifier and
+  SHA512 digest of computer name.
+
+
 0.4.2 (2020-11-10)
 ------------------
 

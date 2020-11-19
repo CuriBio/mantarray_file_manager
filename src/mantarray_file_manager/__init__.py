@@ -6,7 +6,9 @@ File Manager for utilizing Curi bio data files and online databases.
 from .constants import ADC_GAIN_SETTING_UUID
 from .constants import ADC_REF_OFFSET_UUID
 from .constants import ADC_TISSUE_OFFSET_UUID
+from .constants import BACKEND_LOG_UUID
 from .constants import CENTIMILLISECONDS_PER_SECOND
+from .constants import COMPUTER_NAME_HASH
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
@@ -43,16 +45,9 @@ from .exceptions import WellRecordingsNotFromSameSessionError
 from .files import PlateRecording
 from .files import WellFile
 
-# try:  # adapted from https://packaging.python.org/guides/single-sourcing-package-version/
-#     from importlib import metadata
-# except ImportError:  # pragma: no cover
-#     # Running on pre-3.8 Python; use importlib-metadata package
-#     import importlib_metadata as metadata  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
-# __version__: str = metadata.version("mantarray_file_manager")  # type: ignore # Eli (9/1/20): for some reason mypy is giving weird errors for this
 
 __all__ = [
     "WellFile",
-    # "__version__",
     "PlateRecording",
     "UTC_BEGINNING_DATA_ACQUISTION_UUID",
     "START_RECORDING_TIME_INDEX_UUID",
@@ -91,4 +86,6 @@ __all__ = [
     "MIN_SUPPORTED_FILE_VERSION",
     "UnsupportedMantarrayFileVersionError",
     "FileAttributeNotFoundError",
+    "BACKEND_LOG_UUID",
+    "COMPUTER_NAME_HASH",
 ]
