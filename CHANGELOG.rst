@@ -2,6 +2,13 @@ Changelog for Mantarray File Manager
 ====================================
 
 
+0.4.4 (2021-01-07)
+------------------
+
+- Added UUID indicating whether or not a barcode was obtained via a
+  barcode scanner.
+
+
 0.4.3 (2020-11-16)
 ------------------
 

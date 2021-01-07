@@ -7,6 +7,7 @@ from .constants import ADC_GAIN_SETTING_UUID
 from .constants import ADC_REF_OFFSET_UUID
 from .constants import ADC_TISSUE_OFFSET_UUID
 from .constants import BACKEND_LOG_UUID
+from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import CENTIMILLISECONDS_PER_SECOND
 from .constants import COMPUTER_NAME_HASH
 from .constants import CURI_BIO_ACCOUNT_UUID
@@ -88,4 +89,5 @@ __all__ = [
     "FileAttributeNotFoundError",
     "BACKEND_LOG_UUID",
     "COMPUTER_NAME_HASH",
+    "BARCODE_IS_FROM_SCANNER_UUID",
 ]
