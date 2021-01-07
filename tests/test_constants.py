@@ -5,6 +5,7 @@ from mantarray_file_manager import ADC_GAIN_SETTING_UUID
 from mantarray_file_manager import ADC_REF_OFFSET_UUID
 from mantarray_file_manager import ADC_TISSUE_OFFSET_UUID
 from mantarray_file_manager import BACKEND_LOG_UUID
+from mantarray_file_manager import BARCODE_IS_FROM_SCANNER_UUID
 from mantarray_file_manager import CENTIMILLISECONDS_PER_SECOND
 from mantarray_file_manager import COMPUTER_NAME_HASH
 from mantarray_file_manager import CURI_BIO_ACCOUNT_UUID
@@ -108,6 +109,9 @@ def test_metadata_UUIDs():
     assert PLATE_BARCODE_UUID == uuid.UUID("cf60afef-a9f0-4bc3-89e9-c665c6bb6941")
     assert BACKEND_LOG_UUID == uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
     assert COMPUTER_NAME_HASH == uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
+    assert BARCODE_IS_FROM_SCANNER_UUID == uuid.UUID(
+        "7d026e86-da70-4464-9181-dc0ce2d47bd1"
+    )
     assert METADATA_UUID_DESCRIPTIONS == {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
         UTC_BEGINNING_DATA_ACQUISTION_UUID: "UTC Timestamp of Beginning of Data Acquisition",
@@ -138,4 +142,5 @@ def test_metadata_UUIDs():
         PLATE_BARCODE_UUID: "Plate Barcode",
         BACKEND_LOG_UUID: "Backend log file identifier",
         COMPUTER_NAME_HASH: "SHA512 digest of computer name",
+        BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
     }
