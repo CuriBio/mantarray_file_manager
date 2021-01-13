@@ -42,6 +42,10 @@ BACKEND_LOG_UUID = uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
 COMPUTER_NAME_HASH = uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
 BARCODE_IS_FROM_SCANNER_UUID = uuid.UUID("7d026e86-da70-4464-9181-dc0ce2d47bd1")
 IS_FILE_ORIGINAL_UNTRIMMED_UUID = uuid.UUID("52231a24-97a3-497a-917c-86c780d9993f")
+TRIMMED_TIME_FROM_ORIGINAL_START_UUID = uuid.UUID(
+    "371996e6-5e2d-4183-a5cf-06de7058210a"
+)
+TRIMMED_TIME_FROM_ORIGINAL_END_UUID = uuid.UUID("55f6770d-c369-42ce-a437-5ed89c3cb1f8")
 METADATA_UUID_DESCRIPTIONS = {
     HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
     START_RECORDING_TIME_INDEX_UUID: "Timepoint of Beginning of Recording",
@@ -74,6 +78,8 @@ METADATA_UUID_DESCRIPTIONS = {
     COMPUTER_NAME_HASH: "SHA512 digest of computer name",
     BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
     IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
+    TRIMMED_TIME_FROM_ORIGINAL_START_UUID: "Number of centimilliseconds that has been trimmed off the beginning of when the original data started",
+    TRIMMED_TIME_FROM_ORIGINAL_END_UUID: "Number of centimilliseconds that has been trimmed off the end of when the original data ended",
 }
 DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 CENTIMILLISECONDS_PER_SECOND = 1e5

@@ -29,6 +29,8 @@ from mantarray_file_manager import SOFTWARE_RELEASE_VERSION_UUID
 from mantarray_file_manager import START_RECORDING_TIME_INDEX_UUID
 from mantarray_file_manager import TISSUE_SAMPLING_PERIOD_UUID
 from mantarray_file_manager import TOTAL_WELL_COUNT_UUID
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from mantarray_file_manager import USER_ACCOUNT_ID_UUID
 from mantarray_file_manager import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from mantarray_file_manager import UTC_BEGINNING_RECORDING_UUID
@@ -116,6 +118,13 @@ def test_metadata_UUIDs():
     assert IS_FILE_ORIGINAL_UNTRIMMED_UUID == uuid.UUID(
         "52231a24-97a3-497a-917c-86c780d9993f"
     )
+    assert TRIMMED_TIME_FROM_ORIGINAL_START_UUID == uuid.UUID(
+        "371996e6-5e2d-4183-a5cf-06de7058210a"
+    )
+    assert TRIMMED_TIME_FROM_ORIGINAL_END_UUID == uuid.UUID(
+        "55f6770d-c369-42ce-a437-5ed89c3cb1f8"
+    )
+
     assert METADATA_UUID_DESCRIPTIONS == {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
         UTC_BEGINNING_DATA_ACQUISTION_UUID: "UTC Timestamp of Beginning of Data Acquisition",
@@ -148,4 +157,6 @@ def test_metadata_UUIDs():
         COMPUTER_NAME_HASH: "SHA512 digest of computer name",
         BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
         IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
+        TRIMMED_TIME_FROM_ORIGINAL_START_UUID: "Number of centimilliseconds that has been trimmed off the beginning of when the original data started",
+        TRIMMED_TIME_FROM_ORIGINAL_END_UUID: "Number of centimilliseconds that has been trimmed off the end of when the original data ended",
     }
