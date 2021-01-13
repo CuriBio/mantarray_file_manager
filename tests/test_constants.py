@@ -13,6 +13,7 @@ from mantarray_file_manager import CURI_BIO_USER_ACCOUNT_ID
 from mantarray_file_manager import CUSTOMER_ACCOUNT_ID_UUID
 from mantarray_file_manager import DATETIME_STR_FORMAT
 from mantarray_file_manager import HARDWARE_TEST_RECORDING_UUID
+from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MAIN_FIRMWARE_VERSION_UUID
 from mantarray_file_manager import MANTARRAY_NICKNAME_UUID
 from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
@@ -112,6 +113,9 @@ def test_metadata_UUIDs():
     assert BARCODE_IS_FROM_SCANNER_UUID == uuid.UUID(
         "7d026e86-da70-4464-9181-dc0ce2d47bd1"
     )
+    assert IS_FILE_ORIGINAL_UNTRIMMED_UUID == uuid.UUID(
+        "52231a24-97a3-497a-917c-86c780d9993f"
+    )
     assert METADATA_UUID_DESCRIPTIONS == {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
         UTC_BEGINNING_DATA_ACQUISTION_UUID: "UTC Timestamp of Beginning of Data Acquisition",
@@ -143,4 +147,5 @@ def test_metadata_UUIDs():
         BACKEND_LOG_UUID: "Backend log file identifier",
         COMPUTER_NAME_HASH: "SHA512 digest of computer name",
         BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
+        IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
     }

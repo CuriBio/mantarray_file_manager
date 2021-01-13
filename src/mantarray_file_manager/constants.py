@@ -41,6 +41,7 @@ PLATE_BARCODE_UUID = uuid.UUID("cf60afef-a9f0-4bc3-89e9-c665c6bb6941")
 BACKEND_LOG_UUID = uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
 COMPUTER_NAME_HASH = uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
 BARCODE_IS_FROM_SCANNER_UUID = uuid.UUID("7d026e86-da70-4464-9181-dc0ce2d47bd1")
+IS_FILE_ORIGINAL_UNTRIMMED_UUID = uuid.UUID("52231a24-97a3-497a-917c-86c780d9993f")
 METADATA_UUID_DESCRIPTIONS = {
     HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
     START_RECORDING_TIME_INDEX_UUID: "Timepoint of Beginning of Recording",
@@ -72,6 +73,7 @@ METADATA_UUID_DESCRIPTIONS = {
     BACKEND_LOG_UUID: "Backend log file identifier",
     COMPUTER_NAME_HASH: "SHA512 digest of computer name",
     BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
+    IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
 }
 DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 CENTIMILLISECONDS_PER_SECOND = 1e5
