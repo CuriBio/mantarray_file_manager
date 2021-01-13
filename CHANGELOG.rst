@@ -1,6 +1,12 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.4.5 (2021-01-13)
+------------------
+
+- Added UUID indicating whether or not this is an original (untrimmed) file
+- Added UUIDs to track the amount of time trimmed from the file (if trimmed)
+
 
 0.4.4 (2021-01-07)
 ------------------

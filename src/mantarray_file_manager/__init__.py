@@ -15,6 +15,7 @@ from .constants import CURI_BIO_USER_ACCOUNT_ID
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import HARDWARE_TEST_RECORDING_UUID
+from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .constants import MAIN_FIRMWARE_VERSION_UUID
 from .constants import MANTARRAY_NICKNAME_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
@@ -30,6 +31,8 @@ from .constants import SOFTWARE_RELEASE_VERSION_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
 from .constants import TOTAL_WELL_COUNT_UUID
+from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
+from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import USER_ACCOUNT_ID_UUID
 from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
@@ -90,4 +93,7 @@ __all__ = [
     "BACKEND_LOG_UUID",
     "COMPUTER_NAME_HASH",
     "BARCODE_IS_FROM_SCANNER_UUID",
+    "IS_FILE_ORIGINAL_UNTRIMMED_UUID",
+    "TRIMMED_TIME_FROM_ORIGINAL_START_UUID",
+    "TRIMMED_TIME_FROM_ORIGINAL_END_UUID",
 ]
