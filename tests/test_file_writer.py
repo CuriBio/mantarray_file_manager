@@ -16,4 +16,3 @@ def test_MantarrayH5FileCreator__sets_file_name_and_userblock_size_and_file_vers
         assert (
             test_file.attrs["File Format Version"] == CURRENT_HDF5_FILE_FORMAT_VERSION
         )
-        test_file.close()  # Eli (8/11/20): always make sure to explicitly close the files or tests can fail on windows

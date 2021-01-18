@@ -176,8 +176,10 @@ def _extract_datetime_from_h5(
     )
 
 
-class WellFile:
-    """Wrapper around an H5 file for a single well of data.
+class BasicWellFile:
+    """Very thin wrapper around an H5 file for a single well of data.
+
+    Used typically just for assessing file version when migrating.
 
     Args:
         file_name: The path of the H5 file to open.
@@ -193,8 +195,6 @@ class WellFile:
         )
         self._file_name = file_name
         self._file_version: str = self._h5_file.attrs["File Format Version"]
-        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
-        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
 
     def get_h5_file(self) -> h5py.File:
         return self._h5_file
@@ -204,6 +204,25 @@ class WellFile:
 
     def get_file_version(self) -> str:
         return self._file_version
+
+    def __del__(self) -> None:
+        self._h5_file.close()
+
+
+class WellFile(BasicWellFile):
+    """Wrapper around an H5 file for a single well of data.
+
+    Args:
+        file_name: The path of the H5 file to open.
+
+    Attributes:
+        _h5_file: The opened H5 file object.
+    """
+
+    def __init__(self, file_name: str) -> None:
+        super().__init__(file_name)
+        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
+        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
 
     def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
         barcode = self.get_plate_barcode()

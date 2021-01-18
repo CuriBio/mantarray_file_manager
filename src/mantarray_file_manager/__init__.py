@@ -47,9 +47,12 @@ from .constants import WELL_NAME_UUID
 from .constants import WELL_ROW_UUID
 from .constants import XEM_SERIAL_NUMBER_UUID
 from .exceptions import FileAttributeNotFoundError
+from .exceptions import UnsupportedFileMigrationPath
 from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 from .file_writer import MantarrayH5FileCreator
+from .file_writer import migrate_to_latest_version
+from .files import BasicWellFile
 from .files import PlateRecording
 from .files import WellFile
 
@@ -104,4 +107,7 @@ __all__ = [
     "CURRENT_HDF5_FILE_FORMAT_VERSION",
     "MantarrayH5FileCreator",
     "FILE_MIGRATION_PATHS",
+    "migrate_to_latest_version",
+    "UnsupportedFileMigrationPath",
+    "BasicWellFile",
 ]

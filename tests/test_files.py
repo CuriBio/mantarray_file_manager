@@ -6,6 +6,7 @@ import time
 from uuid import UUID
 
 import h5py
+from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
@@ -29,6 +30,31 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1__2,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+
+def test_BasicWellFile__opens_file_and_gets_file_version():
+    expected_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D6.h5",
+    )
+    bwf = BasicWellFile(expected_path)
+    assert bwf.get_file_version() == "0.2.1"
+    assert isinstance(bwf.get_h5_file(), h5py.File)
+    assert bwf.get_file_name() == expected_path
+
+
+def test_BasicWellFile__When_deleted__Then_it_closes_the_h5_file(mocker):
+    bwf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
+    )
+    spied_close = mocker.spy(bwf.get_h5_file(), "close")
+    del bwf
+    spied_close.assert_called_once()
 
 
 def test_WellFile__opens_and_get_file_version():
