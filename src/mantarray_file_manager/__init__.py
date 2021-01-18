@@ -12,8 +12,10 @@ from .constants import CENTIMILLISECONDS_PER_SECOND
 from .constants import COMPUTER_NAME_HASH
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
+from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
+from .constants import FILE_MIGRATION_PATHS
 from .constants import HARDWARE_TEST_RECORDING_UUID
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .constants import MAIN_FIRMWARE_VERSION_UUID
@@ -22,6 +24,7 @@ from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
+from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
 from .constants import REFERENCE_VOLTAGE_UUID
@@ -46,6 +49,7 @@ from .constants import XEM_SERIAL_NUMBER_UUID
 from .exceptions import FileAttributeNotFoundError
 from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
+from .file_writer import MantarrayH5FileCreator
 from .files import PlateRecording
 from .files import WellFile
 
@@ -96,4 +100,8 @@ __all__ = [
     "IS_FILE_ORIGINAL_UNTRIMMED_UUID",
     "TRIMMED_TIME_FROM_ORIGINAL_START_UUID",
     "TRIMMED_TIME_FROM_ORIGINAL_END_UUID",
+    "ORIGINAL_FILE_VERSION_UUID",
+    "CURRENT_HDF5_FILE_FORMAT_VERSION",
+    "MantarrayH5FileCreator",
+    "FILE_MIGRATION_PATHS",
 ]

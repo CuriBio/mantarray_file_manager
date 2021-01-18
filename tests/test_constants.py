@@ -10,8 +10,10 @@ from mantarray_file_manager import CENTIMILLISECONDS_PER_SECOND
 from mantarray_file_manager import COMPUTER_NAME_HASH
 from mantarray_file_manager import CURI_BIO_ACCOUNT_UUID
 from mantarray_file_manager import CURI_BIO_USER_ACCOUNT_ID
+from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import CUSTOMER_ACCOUNT_ID_UUID
 from mantarray_file_manager import DATETIME_STR_FORMAT
+from mantarray_file_manager import FILE_MIGRATION_PATHS
 from mantarray_file_manager import HARDWARE_TEST_RECORDING_UUID
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MAIN_FIRMWARE_VERSION_UUID
@@ -20,6 +22,7 @@ from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
 from mantarray_file_manager import MICROSECONDS_PER_CENTIMILLISECOND
 from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
+from mantarray_file_manager import ORIGINAL_FILE_VERSION_UUID
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
 from mantarray_file_manager import REFERENCE_VOLTAGE_UUID
@@ -56,6 +59,7 @@ def test_time_conversion():
 
 def test_versions():
     assert MIN_SUPPORTED_FILE_VERSION == "0.1.1"
+    assert CURRENT_HDF5_FILE_FORMAT_VERSION == "0.4.1"
 
 
 def test_metadata_UUIDs():
@@ -124,7 +128,9 @@ def test_metadata_UUIDs():
     assert TRIMMED_TIME_FROM_ORIGINAL_END_UUID == uuid.UUID(
         "55f6770d-c369-42ce-a437-5ed89c3cb1f8"
     )
-
+    assert ORIGINAL_FILE_VERSION_UUID == uuid.UUID(
+        "cd1b4063-4a87-4a57-bc12-923ff4890844"
+    )
     assert METADATA_UUID_DESCRIPTIONS == {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
         UTC_BEGINNING_DATA_ACQUISTION_UUID: "UTC Timestamp of Beginning of Data Acquisition",
@@ -159,4 +165,9 @@ def test_metadata_UUIDs():
         IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
         TRIMMED_TIME_FROM_ORIGINAL_START_UUID: "Number of centimilliseconds that has been trimmed off the beginning of when the original data started",
         TRIMMED_TIME_FROM_ORIGINAL_END_UUID: "Number of centimilliseconds that has been trimmed off the end of when the original data ended",
+        ORIGINAL_FILE_VERSION_UUID: "The original version of the file when recorded, prior to any migrations to newer versions/formats.",
     }
+
+
+def test_file_migration_paths():
+    assert FILE_MIGRATION_PATHS == {"0.3.1": "0.4.1"}
