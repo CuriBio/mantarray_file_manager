@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 """Classes and functions for writing and migrating files."""
+import ntpath
+import os
+from os import getcwd
+from typing import Optional
+
 import h5py
 
+from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
+from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .exceptions import UnsupportedFileMigrationPath
 from .files import BasicWellFile
+from .files import WELL_FILE_CLASSES
 
 
 class MantarrayH5FileCreator(
@@ -13,7 +22,11 @@ class MantarrayH5FileCreator(
 ):  # pylint: disable=too-many-ancestors # Eli (7/28/20): I don't see a way around this...we need to subclass h5py File
     """Creates an H5 file with the basic format/layout."""
 
-    def __init__(self, file_name: str) -> None:
+    def __init__(
+        self,
+        file_name: str,
+        file_format_version: str = CURRENT_HDF5_FILE_FORMAT_VERSION,
+    ) -> None:
         super().__init__(
             file_name,
             "w",
@@ -21,11 +34,11 @@ class MantarrayH5FileCreator(
             userblock_size=512,  # minimum size is 512 bytes
         )
 
-        self.attrs["File Format Version"] = CURRENT_HDF5_FILE_FORMAT_VERSION
+        self.attrs[FILE_FORMAT_VERSION_METADATA_KEY] = file_format_version
 
 
-def migrate_to_latest_version(
-    starting_file_path: str,  # , working_directory: Optional[str] = None
+def migrate_to_next_version(
+    starting_file_path: str, working_directory: Optional[str] = None
 ) -> str:
     """Migrates an H5 file to the latest version.
 
@@ -40,6 +53,36 @@ def migrate_to_latest_version(
     file_version = file.get_file_version()
     if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
         return starting_file_path
+    if working_directory is None:
+        working_directory = getcwd()
     if file_version not in FILE_MIGRATION_PATHS:
         raise UnsupportedFileMigrationPath(file_version)
-    return starting_file_path
+    del file  # delete the basic file and open it using the appropriate reader
+    old_file = WELL_FILE_CLASSES[file_version](starting_file_path)
+    new_file_version = FILE_MIGRATION_PATHS[file_version]
+    old_file_basename = ntpath.basename(starting_file_path)
+    old_file_basename_no_suffix = old_file_basename[:-3]
+
+    new_file_name = os.path.join(
+        working_directory, f"{old_file_basename_no_suffix}__v{new_file_version}.h5"
+    )
+    new_file = MantarrayH5FileCreator(
+        new_file_name, file_format_version=new_file_version
+    )
+
+    # Currently the only migration supported is v0.3.1->v0.4.1. Once others are added, more custom migration scripts would be needed (and if/else logic etc)
+
+    # old metadata
+    old_h5_file = old_file.get_h5_file()
+    old_metadata_keys = set(old_h5_file.attrs.keys())
+    old_metadata_keys.remove(FILE_FORMAT_VERSION_METADATA_KEY)
+    for iter_metadata_key in old_metadata_keys:
+        new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
+    # new metadata in v0.4.1
+    for iter_metadata_key, iter_metadata_value in (
+        (BARCODE_IS_FROM_SCANNER_UUID, False),
+        (IS_FILE_ORIGINAL_UNTRIMMED_UUID, True),
+    ):
+        new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
+    new_file.close()
+    return new_file_name

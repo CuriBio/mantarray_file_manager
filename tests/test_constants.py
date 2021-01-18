@@ -13,6 +13,7 @@ from mantarray_file_manager import CURI_BIO_USER_ACCOUNT_ID
 from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import CUSTOMER_ACCOUNT_ID_UUID
 from mantarray_file_manager import DATETIME_STR_FORMAT
+from mantarray_file_manager import FILE_FORMAT_VERSION_METADATA_KEY
 from mantarray_file_manager import FILE_MIGRATION_PATHS
 from mantarray_file_manager import HARDWARE_TEST_RECORDING_UUID
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
@@ -60,6 +61,7 @@ def test_time_conversion():
 def test_versions():
     assert MIN_SUPPORTED_FILE_VERSION == "0.1.1"
     assert CURRENT_HDF5_FILE_FORMAT_VERSION == "0.4.1"
+    assert FILE_FORMAT_VERSION_METADATA_KEY == "File Format Version"
 
 
 def test_metadata_UUIDs():

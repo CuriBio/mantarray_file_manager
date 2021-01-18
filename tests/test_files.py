@@ -6,7 +6,9 @@ import time
 from uuid import UUID
 
 import h5py
+from immutabledict import immutabledict
 from mantarray_file_manager import BasicWellFile
+from mantarray_file_manager import FILE_FORMAT_VERSION_METADATA_KEY
 from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
@@ -14,7 +16,10 @@ from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import UnsupportedMantarrayFileVersionError
 from mantarray_file_manager import USER_ACCOUNT_ID_UUID
+from mantarray_file_manager import WELL_FILE_CLASSES
 from mantarray_file_manager import WellFile
+from mantarray_file_manager import WellFile_0_3_1
+from mantarray_file_manager import WellFile_0_4_1
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
 import pytest
@@ -207,7 +212,10 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
     generic_well_file_0_3_1,
 ):
-    assert generic_well_file_0_3_1.get_h5_attribute("File Format Version") == "0.3.1"
+    assert (
+        generic_well_file_0_3_1.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY)
+        == "0.3.1"
+    )
 
 
 def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
@@ -429,7 +437,7 @@ def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
         )
     )
 
-    assert wf.get_h5_attribute("File Format Version") == "0.1.1"
+    assert wf.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY) == "0.1.1"
     assert isinstance(wf.get_h5_file(), h5py.File)
     assert "M120171010__2020_07_22_201922__A1" in wf.get_file_name()
     assert wf.get_unique_recording_key() == (
@@ -504,3 +512,9 @@ def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
     dur_per_iter = dur / num_iterations
     # print(dur_per_iter)
     assert dur_per_iter < 10000000
+
+
+def test_WELL_FILE_CLASSES():
+    assert WELL_FILE_CLASSES == immutabledict(
+        {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1}
+    )
