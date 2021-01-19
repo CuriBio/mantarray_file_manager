@@ -7,11 +7,15 @@ from mantarray_file_manager import ADC_TISSUE_OFFSET_UUID
 from mantarray_file_manager import BACKEND_LOG_UUID
 from mantarray_file_manager import BARCODE_IS_FROM_SCANNER_UUID
 from mantarray_file_manager import CENTIMILLISECONDS_PER_SECOND
-from mantarray_file_manager import COMPUTER_NAME_HASH
+from mantarray_file_manager import COMPUTER_NAME_HASH_UUID
 from mantarray_file_manager import CURI_BIO_ACCOUNT_UUID
 from mantarray_file_manager import CURI_BIO_USER_ACCOUNT_ID
+from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import CUSTOMER_ACCOUNT_ID_UUID
 from mantarray_file_manager import DATETIME_STR_FORMAT
+from mantarray_file_manager import FILE_FORMAT_VERSION_METADATA_KEY
+from mantarray_file_manager import FILE_MIGRATION_PATHS
+from mantarray_file_manager import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from mantarray_file_manager import HARDWARE_TEST_RECORDING_UUID
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MAIN_FIRMWARE_VERSION_UUID
@@ -20,6 +24,8 @@ from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
 from mantarray_file_manager import MICROSECONDS_PER_CENTIMILLISECOND
 from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
+from mantarray_file_manager import NOT_APPLICABLE_H5_METADATA
+from mantarray_file_manager import ORIGINAL_FILE_VERSION_UUID
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
 from mantarray_file_manager import REFERENCE_VOLTAGE_UUID
@@ -36,6 +42,7 @@ from mantarray_file_manager import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from mantarray_file_manager import UTC_BEGINNING_RECORDING_UUID
 from mantarray_file_manager import UTC_FIRST_REF_DATA_POINT_UUID
 from mantarray_file_manager import UTC_FIRST_TISSUE_DATA_POINT_UUID
+from mantarray_file_manager import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
 from mantarray_file_manager import WELL_COLUMN_UUID
 from mantarray_file_manager import WELL_INDEX_UUID
 from mantarray_file_manager import WELL_NAME_UUID
@@ -56,9 +63,15 @@ def test_time_conversion():
 
 def test_versions():
     assert MIN_SUPPORTED_FILE_VERSION == "0.1.1"
+    assert CURRENT_HDF5_FILE_FORMAT_VERSION == "0.4.2"
+    assert FILE_FORMAT_VERSION_METADATA_KEY == "File Format Version"
 
 
 def test_metadata_UUIDs():
+    assert NOT_APPLICABLE_H5_METADATA == uuid.UUID(
+        "59d92e00-99d5-4460-9a28-5a1a0fe9aecf"
+    )
+
     assert HARDWARE_TEST_RECORDING_UUID == uuid.UUID(
         "a2e76058-08cd-475d-a55d-31d401c3cb34"
     )
@@ -111,7 +124,7 @@ def test_metadata_UUIDs():
     )
     assert PLATE_BARCODE_UUID == uuid.UUID("cf60afef-a9f0-4bc3-89e9-c665c6bb6941")
     assert BACKEND_LOG_UUID == uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
-    assert COMPUTER_NAME_HASH == uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
+    assert COMPUTER_NAME_HASH_UUID == uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
     assert BARCODE_IS_FROM_SCANNER_UUID == uuid.UUID(
         "7d026e86-da70-4464-9181-dc0ce2d47bd1"
     )
@@ -123,6 +136,15 @@ def test_metadata_UUIDs():
     )
     assert TRIMMED_TIME_FROM_ORIGINAL_END_UUID == uuid.UUID(
         "55f6770d-c369-42ce-a437-5ed89c3cb1f8"
+    )
+    assert ORIGINAL_FILE_VERSION_UUID == uuid.UUID(
+        "cd1b4063-4a87-4a57-bc12-923ff4890844"
+    )
+    assert UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID == uuid.UUID(
+        "399b2148-09d4-418b-a132-e37df2721938"
+    )
+    assert FILE_VERSION_PRIOR_TO_MIGRATION_UUID == uuid.UUID(
+        "11b4945b-3cf3-4f67-8bee-7abc3c449756"
     )
 
     assert METADATA_UUID_DESCRIPTIONS == {
@@ -154,9 +176,16 @@ def test_metadata_UUIDs():
         ADC_REF_OFFSET_UUID: "ADC Reference Sensor Offset",
         PLATE_BARCODE_UUID: "Plate Barcode",
         BACKEND_LOG_UUID: "Backend log file identifier",
-        COMPUTER_NAME_HASH: "SHA512 digest of computer name",
+        COMPUTER_NAME_HASH_UUID: "SHA512 digest of computer name",
         BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
         IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
         TRIMMED_TIME_FROM_ORIGINAL_START_UUID: "Number of centimilliseconds that has been trimmed off the beginning of when the original data started",
         TRIMMED_TIME_FROM_ORIGINAL_END_UUID: "Number of centimilliseconds that has been trimmed off the end of when the original data ended",
+        ORIGINAL_FILE_VERSION_UUID: "The original version of the file when recorded, prior to any migrations to newer versions/formats.",
+        UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID: "Timestamp when this file was migrated from an earlier version.",
+        FILE_VERSION_PRIOR_TO_MIGRATION_UUID: "File format version that this file was migrated from",
     }
+
+
+def test_file_migration_paths():
+    assert FILE_MIGRATION_PATHS == {"0.3.1": "0.4.1", "0.4.1": "0.4.2"}

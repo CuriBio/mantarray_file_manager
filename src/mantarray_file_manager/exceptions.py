@@ -5,6 +5,7 @@ from uuid import UUID
 
 from immutable_data_validation import is_uuid
 
+from .constants import FILE_MIGRATION_PATHS
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MIN_SUPPORTED_FILE_VERSION
 
@@ -45,4 +46,13 @@ class FileAttributeNotFoundError(Exception):
             attr_description = f"{attr_name} (Unrecognized UUID)"
         super().__init__(
             f"The metadata attribute '{attr_description}' was not found in this file. File format version {file_version}, filepath: {file_path}"
+        )
+
+
+class UnsupportedFileMigrationPath(Exception):
+    """Error raised if a file is attempted to be migrated from a version that has no migration script."""
+
+    def __init__(self, file_version: str):
+        super().__init__(
+            f"There is no supported migration path from version {file_version}. Supported paths are: {FILE_MIGRATION_PATHS}."
         )

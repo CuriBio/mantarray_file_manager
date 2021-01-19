@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions for finding and managing files."""
+"""Classes and functions for finding and reading files."""
 import datetime
 from glob import glob
 import os
@@ -14,6 +14,7 @@ from typing import Union
 from uuid import UUID
 
 import h5py
+from immutabledict import immutabledict
 from nptyping import NDArray
 import numpy as np
 from semver import VersionInfo
@@ -21,6 +22,7 @@ from stdlib_utils import get_current_file_abs_directory
 
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
+from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
@@ -176,8 +178,10 @@ def _extract_datetime_from_h5(
     )
 
 
-class WellFile:
-    """Wrapper around an H5 file for a single well of data.
+class BasicWellFile:
+    """Very thin wrapper around an H5 file for a single well of data.
+
+    Used typically just for assessing file version when migrating.
 
     Args:
         file_name: The path of the H5 file to open.
@@ -192,9 +196,7 @@ class WellFile:
             "r",
         )
         self._file_name = file_name
-        self._file_version: str = self._h5_file.attrs["File Format Version"]
-        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
-        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
+        self._file_version: str = self._h5_file.attrs[FILE_FORMAT_VERSION_METADATA_KEY]
 
     def get_h5_file(self) -> h5py.File:
         return self._h5_file
@@ -205,13 +207,33 @@ class WellFile:
     def get_file_version(self) -> str:
         return self._file_version
 
-    def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
-        barcode = self.get_plate_barcode()
-        start_time = self.get_begin_recording()
-        return barcode, start_time
-
     def get_h5_attribute(self, attr_name: str) -> Any:
         return _get_file_attr(self._h5_file, attr_name, self._file_version)
+
+    def __del__(self) -> None:
+        self._h5_file.close()
+
+
+class WellFileMixIn:
+    # pylint: disable=too-few-public-methods # Eli (1/18/21): If these mixins don't have these base attributes then mypy complains
+    _file_version: str
+    _h5_file: h5py.File
+
+
+class PlateMetadataMixIn(WellFileMixIn):
+    # pylint: disable=too-few-public-methods # Eli (1/18/21): I think its better to keep these MixIns well separated for better future flexibility
+    def get_plate_barcode(self) -> str:
+        return str(
+            _get_file_attr(
+                self._h5_file,
+                str(PLATE_BARCODE_UUID),
+                self._file_version,
+            )
+        )
+
+
+class WellMetadataMixIn(WellFileMixIn):
+    """Mixin for metadata related to the well itself."""
 
     def get_well_name(self) -> str:
         return str(
@@ -231,14 +253,21 @@ class WellFile:
             )
         )
 
-    def get_plate_barcode(self) -> str:
+
+class InstrumentMetadataMixIn(WellFileMixIn):
+    # pylint: disable=too-few-public-methods # Eli (1/18/21): I think its better to keep these MixIns well separated for better future flexibility
+    def get_mantarray_serial_number(self) -> str:
         return str(
             _get_file_attr(
                 self._h5_file,
-                str(PLATE_BARCODE_UUID),
+                str(MANTARRAY_SERIAL_NUMBER_UUID),
                 self._file_version,
             )
         )
+
+
+class CustomerMetadataMixIn(WellFileMixIn):
+    """Mixin for metadata related to the customer."""
 
     def get_user_account(self) -> UUID:
         return UUID(
@@ -247,11 +276,6 @@ class WellFile:
                 str(USER_ACCOUNT_ID_UUID),
                 self._file_version,
             )
-        )
-
-    def get_timestamp_of_beginning_of_data_acquisition(self) -> datetime.datetime:
-        return _extract_datetime_from_h5(
-            self._h5_file, self._file_version, UTC_BEGINNING_DATA_ACQUISTION_UUID
         )
 
     def get_customer_account(self) -> UUID:
@@ -263,13 +287,44 @@ class WellFile:
             )
         )
 
-    def get_mantarray_serial_number(self) -> str:
-        return str(
-            _get_file_attr(
-                self._h5_file,
-                str(MANTARRAY_SERIAL_NUMBER_UUID),
-                self._file_version,
-            )
+
+class LikelyConsistentMetadata(
+    CustomerMetadataMixIn,
+    InstrumentMetadataMixIn,
+    PlateMetadataMixIn,
+    WellMetadataMixIn,
+):
+    """A wrapper for mixins that will likely be in all future file formats."""
+
+
+class WellFile(
+    BasicWellFile, LikelyConsistentMetadata
+):  # pylint: disable=too-many-ancestors # Eli (7/28/20): I don't see a way around this...we need to subclass h5py File
+    """Wrapper around an H5 file for a single well of data.
+
+    This is only guaranteed to function correctly on the current working file format version.
+    Use the file migrate_to_latest_version to get files up to date with the current working version.
+
+    Args:
+        file_name: The path of the H5 file to open.
+
+    Attributes:
+        _h5_file: The opened H5 file object.
+    """
+
+    def __init__(self, file_name: str) -> None:
+        super().__init__(file_name)
+        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
+        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
+
+    def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
+        barcode = self.get_plate_barcode()
+        start_time = self.get_begin_recording()
+        return barcode, start_time
+
+    def get_timestamp_of_beginning_of_data_acquisition(self) -> datetime.datetime:
+        return _extract_datetime_from_h5(
+            self._h5_file, self._file_version, UTC_BEGINNING_DATA_ACQUISTION_UUID
         )
 
     def get_begin_recording(self) -> datetime.datetime:
@@ -402,8 +457,44 @@ class WellFile:
         return self._raw_ref_reading
 
 
+class WellFile_0_3_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
+    WellFile
+):
+    """Historical class to open WellFiles in version 0.3.1.
+
+    Typically kept around for test cases and migration scripts.
+
+    If the main WellFile object stops being compatible, then old
+    deprecated methods should be moved here.
+    """
+
+
+class WellFile_0_4_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
+    WellFile
+):
+    """Historical class to open WellFiles in version 0.4.1.
+
+    Typically kept around for test cases and migration scripts.
+
+    If the main WellFile object stops being compatible, then old
+    deprecated methods should be moved here.
+    """
+
+
+class WellFile_0_4_2(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
+    WellFile
+):
+    """Historical class to open WellFiles in version 0.4.2.
+
+    Typically kept around for test cases and migration scripts.
+
+    If the main WellFile object stops being compatible, then old
+    deprecated methods should be moved here.
+    """
+
+
 class PlateRecording:
-    """Wrapper around 24 WellFiles fpr a single plate of data.
+    """Wrapper around 24 WellFiles for a single plate of data.
 
     Args:
         file_paths: A list of all the file paths for each h5 file to open, or already instantiated WellFile objects.
@@ -454,3 +545,8 @@ class PlateRecording:
 
     def get_well_indices(self) -> Tuple[int, ...]:
         return tuple(sorted(self._wells_by_index.keys()))
+
+
+WELL_FILE_CLASSES = immutabledict(
+    {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1, "0.4.2": WellFile_0_4_2}
+)

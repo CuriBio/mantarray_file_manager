@@ -6,3 +6,4 @@ numpy==1.19.5
 semver==2.13.0
 immutable_data_validation==0.2.1
 stdlib-utils==0.3.11
+immutabledict==1.1.0

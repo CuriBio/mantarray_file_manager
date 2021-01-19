@@ -6,6 +6,9 @@ import time
 from uuid import UUID
 
 import h5py
+from immutabledict import immutabledict
+from mantarray_file_manager import BasicWellFile
+from mantarray_file_manager import FILE_FORMAT_VERSION_METADATA_KEY
 from mantarray_file_manager import FileAttributeNotFoundError
 from mantarray_file_manager import files
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
@@ -13,7 +16,11 @@ from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
 from mantarray_file_manager import PlateRecording
 from mantarray_file_manager import UnsupportedMantarrayFileVersionError
 from mantarray_file_manager import USER_ACCOUNT_ID_UUID
+from mantarray_file_manager import WELL_FILE_CLASSES
 from mantarray_file_manager import WellFile
+from mantarray_file_manager import WellFile_0_3_1
+from mantarray_file_manager import WellFile_0_4_1
+from mantarray_file_manager import WellFile_0_4_2
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
 import pytest
@@ -29,6 +36,31 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1__2,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+
+def test_BasicWellFile__opens_file_and_gets_file_version():
+    expected_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D6.h5",
+    )
+    bwf = BasicWellFile(expected_path)
+    assert bwf.get_file_version() == "0.2.1"
+    assert isinstance(bwf.get_h5_file(), h5py.File)
+    assert bwf.get_file_name() == expected_path
+
+
+def test_BasicWellFile__When_deleted__Then_it_closes_the_h5_file(mocker):
+    bwf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "2020_08_04_build_775",
+            "MA20001010__2020_08_04_220041__D6.h5",
+        )
+    )
+    spied_close = mocker.spy(bwf.get_h5_file(), "close")
+    del bwf
+    spied_close.assert_called_once()
 
 
 def test_WellFile__opens_and_get_file_version():
@@ -181,7 +213,10 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
     generic_well_file_0_3_1,
 ):
-    assert generic_well_file_0_3_1.get_h5_attribute("File Format Version") == "0.3.1"
+    assert (
+        generic_well_file_0_3_1.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY)
+        == "0.3.1"
+    )
 
 
 def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
@@ -403,7 +438,7 @@ def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
         )
     )
 
-    assert wf.get_h5_attribute("File Format Version") == "0.1.1"
+    assert wf.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY) == "0.1.1"
     assert isinstance(wf.get_h5_file(), h5py.File)
     assert "M120171010__2020_07_22_201922__A1" in wf.get_file_name()
     assert wf.get_unique_recording_key() == (
@@ -478,3 +513,9 @@ def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
     dur_per_iter = dur / num_iterations
     # print(dur_per_iter)
     assert dur_per_iter < 10000000
+
+
+def test_WELL_FILE_CLASSES():
+    assert WELL_FILE_CLASSES == immutabledict(
+        {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1, "0.4.2": WellFile_0_4_2}
+    )
