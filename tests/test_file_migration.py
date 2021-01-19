@@ -6,13 +6,17 @@ import tempfile
 from freezegun import freeze_time
 from mantarray_file_manager import BACKEND_LOG_UUID
 from mantarray_file_manager import BARCODE_IS_FROM_SCANNER_UUID
+from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import COMPUTER_NAME_HASH_UUID
 from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
+from mantarray_file_manager import FILE_MIGRATION_PATHS
 from mantarray_file_manager import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from mantarray_file_manager import file_writer
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MantarrayH5FileCreator
+from mantarray_file_manager import migrate_to_latest_version
 from mantarray_file_manager import migrate_to_next_version
+from mantarray_file_manager import NOT_APPLICABLE_H5_METADATA
 from mantarray_file_manager import ORIGINAL_FILE_VERSION_UUID
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
@@ -25,6 +29,7 @@ from mantarray_file_manager import WellFile_0_3_1
 from mantarray_file_manager import WellFile_0_4_1
 import numpy as np
 import pytest
+from semver import VersionInfo
 from stdlib_utils import get_current_file_abs_directory
 
 from .fixtures import PATH_TO_GENERIC_0_3_1_FILE
@@ -81,8 +86,12 @@ def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file__Then_the_new_fil
         assert wf.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
         assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 0
         assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 0
-        assert wf.get_h5_attribute(str(BACKEND_LOG_UUID)) == ""
-        assert wf.get_h5_attribute(str(COMPUTER_NAME_HASH_UUID)) == ""
+        assert wf.get_h5_attribute(str(BACKEND_LOG_UUID)) == str(
+            NOT_APPLICABLE_H5_METADATA
+        )
+        assert wf.get_h5_attribute(str(COMPUTER_NAME_HASH_UUID)) == str(
+            NOT_APPLICABLE_H5_METADATA
+        )
 
         # raw data
         np.testing.assert_array_equal(
@@ -121,7 +130,9 @@ def test_migrate_to_next_version__When_invoked_on_a_0_4_1_file__Then_the_new_fil
         )
 
         # new metadata
-        assert wf.get_h5_attribute(str(ORIGINAL_FILE_VERSION_UUID)) == ""
+        assert wf.get_h5_attribute(str(ORIGINAL_FILE_VERSION_UUID)) == str(
+            NOT_APPLICABLE_H5_METADATA
+        )
         assert (
             wf.get_h5_attribute(str(FILE_VERSION_PRIOR_TO_MIGRATION_UUID))
             == old_version
@@ -141,3 +152,46 @@ def test_migrate_to_next_version__When_invoked_on_a_0_4_1_file__Then_the_new_fil
 
         wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
         old_wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+
+
+def test_migrate_to_latest_version__When_invoked_on_a_file_one_step_below_the_latest_version__Then_the_file_path_and_directory_are_passed_to_the_migrate_to_next_version_function(
+    mocker,
+):
+    sorted_migration_versions = sorted(
+        [VersionInfo.parse(x) for x in FILE_MIGRATION_PATHS.keys()]
+    )
+    latest_migration_path_version = str(sorted_migration_versions[-1])
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path_to_latest = os.path.join(tmp_dir, "latest.h5")
+        latest_version_file = MantarrayH5FileCreator(path_to_latest)
+        latest_version_file.close()
+        path_to_next_to_latest = os.path.join(tmp_dir, "next-to-latest.h5")
+        next_to_latest_version_file = MantarrayH5FileCreator(
+            path_to_next_to_latest, file_format_version=latest_migration_path_version
+        )
+        next_to_latest_version_file.close()
+        mocked_migrate_to_next_version = mocker.patch.object(
+            file_writer,
+            "migrate_to_next_version",
+            autospec=True,
+            return_value=path_to_latest,
+        )
+        migrate_to_latest_version(path_to_next_to_latest, working_directory=tmp_dir)
+
+        mocked_migrate_to_next_version.assert_called_once_with(
+            path_to_next_to_latest, working_directory=tmp_dir
+        )
+
+
+def test_migrate_to_latest_version__When_invoked_on_a_0_3_1_file__Then_the_returned_file_path_is_for_the_latest_version(
+    mocker,
+):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path_to_latest = migrate_to_latest_version(
+            PATH_TO_GENERIC_0_3_1_FILE, working_directory=tmp_dir
+        )
+
+        assert path_to_latest.startswith(tmp_dir)
+        latest_file = BasicWellFile(path_to_latest)
+        assert latest_file.get_file_version() == CURRENT_HDF5_FILE_FORMAT_VERSION
+        latest_file.get_h5_file().close()

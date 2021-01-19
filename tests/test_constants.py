@@ -24,6 +24,7 @@ from mantarray_file_manager import MANTARRAY_SERIAL_NUMBER_UUID
 from mantarray_file_manager import METADATA_UUID_DESCRIPTIONS
 from mantarray_file_manager import MICROSECONDS_PER_CENTIMILLISECOND
 from mantarray_file_manager import MIN_SUPPORTED_FILE_VERSION
+from mantarray_file_manager import NOT_APPLICABLE_H5_METADATA
 from mantarray_file_manager import ORIGINAL_FILE_VERSION_UUID
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
@@ -67,6 +68,10 @@ def test_versions():
 
 
 def test_metadata_UUIDs():
+    assert NOT_APPLICABLE_H5_METADATA == uuid.UUID(
+        "59d92e00-99d5-4460-9a28-5a1a0fe9aecf"
+    )
+
     assert HARDWARE_TEST_RECORDING_UUID == uuid.UUID(
         "a2e76058-08cd-475d-a55d-31d401c3cb34"
     )

@@ -27,6 +27,7 @@ from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
+from .constants import NOT_APPLICABLE_H5_METADATA
 from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
@@ -55,6 +56,7 @@ from .exceptions import UnsupportedFileMigrationPath
 from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
 from .file_writer import MantarrayH5FileCreator
+from .file_writer import migrate_to_latest_version
 from .file_writer import migrate_to_next_version
 from .files import BasicWellFile
 from .files import PlateRecording
@@ -117,6 +119,7 @@ __all__ = [
     "MantarrayH5FileCreator",
     "FILE_MIGRATION_PATHS",
     "migrate_to_next_version",
+    "migrate_to_latest_version",
     "UnsupportedFileMigrationPath",
     "BasicWellFile",
     "WellFile_0_4_1",
@@ -126,4 +129,5 @@ __all__ = [
     "WELL_FILE_CLASSES",
     "UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID",
     "FILE_VERSION_PRIOR_TO_MIGRATION_UUID",
+    "NOT_APPLICABLE_H5_METADATA",
 ]

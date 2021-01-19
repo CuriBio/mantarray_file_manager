@@ -20,6 +20,7 @@ from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
 from .constants import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
+from .constants import NOT_APPLICABLE_H5_METADATA
 from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
@@ -49,27 +50,32 @@ class MantarrayH5FileCreator(
         self.attrs[FILE_FORMAT_VERSION_METADATA_KEY] = file_format_version
 
 
+def _get_format_version_of_file(file_path: str) -> str:
+    file = BasicWellFile(file_path)
+    file_version = file.get_file_version()
+    file.get_h5_file().close()
+    return file_version
+
+
 def migrate_to_next_version(
     starting_file_path: str, working_directory: Optional[str] = None
 ) -> str:
-    """Migrates an H5 file to the latest version.
+    """Migrates an H5 file to the next version along the migration path.
 
     Args:
         starting_file_path: the path to the H5 file
         working_directory: the directory in which to create the new files. Defaults to current working directory
 
     Returns:
-        The path to the final H5 file migrated to the latest version.
+        The path to the H5 file migrated to the next version.
     """
-    file = BasicWellFile(starting_file_path)
-    file_version = file.get_file_version()
+    file_version = _get_format_version_of_file(starting_file_path)
     if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
         return starting_file_path
     if working_directory is None:
         working_directory = getcwd()
     if file_version not in FILE_MIGRATION_PATHS:
         raise UnsupportedFileMigrationPath(file_version)
-    del file  # delete the basic file and open it using the appropriate reader
     old_file = WELL_FILE_CLASSES[file_version](starting_file_path)
     new_file_version = FILE_MIGRATION_PATHS[file_version]
     old_file_basename = ntpath.basename(starting_file_path)
@@ -81,8 +87,6 @@ def migrate_to_next_version(
     new_file = MantarrayH5FileCreator(
         new_file_name, file_format_version=new_file_version
     )
-
-    # Currently the only migration supported is v0.3.1->v0.4.1. Once others are added, more custom migration scripts would be needed (and if/else logic etc)
 
     # old metadata
     old_h5_file = old_file.get_h5_file()
@@ -105,19 +109,50 @@ def migrate_to_next_version(
             (IS_FILE_ORIGINAL_UNTRIMMED_UUID, True),
             (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, 0),
             (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, 0),
-            (BACKEND_LOG_UUID, ""),
-            (COMPUTER_NAME_HASH_UUID, ""),
+            (BACKEND_LOG_UUID, str(NOT_APPLICABLE_H5_METADATA)),
+            (COMPUTER_NAME_HASH_UUID, str(NOT_APPLICABLE_H5_METADATA)),
         )
-    else:  # v0.4.2
+    elif new_file_version == "0.4.2":
         utc_now = datetime.datetime.utcnow()
         formatted_time = utc_now.strftime(DATETIME_STR_FORMAT)
         metadata_to_create = (
-            (ORIGINAL_FILE_VERSION_UUID, ""),
+            (
+                ORIGINAL_FILE_VERSION_UUID,
+                str(NOT_APPLICABLE_H5_METADATA),
+            ),  # Eli (1/19/21): there's no way I can think of to know for sure what the very original file version was since it wasn't recorded as metadata, so just leaving it blank for now.
             (FILE_VERSION_PRIOR_TO_MIGRATION_UUID, file_version),
             (UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID, formatted_time),
+        )
+    else:
+        raise NotImplementedError(
+            f"Migrating to the version {new_file_version} is not supported."
         )
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
     new_file.close()
     return new_file_name
+
+
+def migrate_to_latest_version(
+    starting_file_path: str, working_directory: Optional[str] = None
+) -> str:
+    """Migrates an H5 file to the latest version.
+
+    To use from the command line: `python -c "from mantarray_file_manager import migrate_to_latest_version; migrate_to_latest_version('tests/h5/v0.3.1/MA20123456__2020_08_17_145752__A1.h5')"`
+
+    Args:
+        starting_file_path: the path to the H5 file
+        working_directory: the directory in which to create the new files. Defaults to current working directory
+
+    Returns:
+        The path to the final H5 file migrated to the latest version.
+    """
+    current_file_path = starting_file_path
+    while True:
+        file_version = _get_format_version_of_file(current_file_path)
+        if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
+            return current_file_path
+        current_file_path = migrate_to_next_version(
+            current_file_path, working_directory=working_directory
+        )

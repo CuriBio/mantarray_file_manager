@@ -17,6 +17,10 @@ FILE_MIGRATION_PATHS = immutabledict(
     }
 )
 
+NOT_APPLICABLE_H5_METADATA = uuid.UUID(
+    "59d92e00-99d5-4460-9a28-5a1a0fe9aecf"
+)  # Eli (1/19/21): H5 files can't store the concept of `None` in their metadata, so using this value to denote that a particular piece of metadata is not available (i.e. after migrating to a newer file format version)
+
 HARDWARE_TEST_RECORDING_UUID = uuid.UUID("a2e76058-08cd-475d-a55d-31d401c3cb34")
 UTC_BEGINNING_DATA_ACQUISTION_UUID = uuid.UUID("98c67f22-013b-421a-831b-0ea55df4651e")
 START_RECORDING_TIME_INDEX_UUID = uuid.UUID("e41422b3-c903-48fd-9856-46ff56a6534c")
