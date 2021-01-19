@@ -3,12 +3,17 @@
 import os
 import tempfile
 
+from freezegun import freeze_time
+from mantarray_file_manager import BACKEND_LOG_UUID
 from mantarray_file_manager import BARCODE_IS_FROM_SCANNER_UUID
+from mantarray_file_manager import COMPUTER_NAME_HASH_UUID
 from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import file_writer
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MantarrayH5FileCreator
 from mantarray_file_manager import migrate_to_next_version
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from mantarray_file_manager import UnsupportedFileMigrationPath
 from mantarray_file_manager import WELL_INDEX_UUID
 from mantarray_file_manager import WELL_NAME_UUID
@@ -49,6 +54,7 @@ def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file_with_no_working_d
         assert new_file_path.startswith(tmp_dir)
 
 
+@freeze_time("2021-01-18 13:45:30.543221")
 def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file__Then_the_new_file_has_features_of_0_4_1__including_raw_data_old_metadata_and_new_metadata():
     with tempfile.TemporaryDirectory() as tmp_dir:
         new_file_path = migrate_to_next_version(
@@ -66,3 +72,9 @@ def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file__Then_the_new_fil
             str(BARCODE_IS_FROM_SCANNER_UUID)
         )  # Eli (1/18/21): tried using `is False` but got weird errors saying `assert False is False` failed...unsure why
         assert wf.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+        assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 0
+        assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 0
+        assert wf.get_h5_attribute(str(BACKEND_LOG_UUID)) == ""
+        assert wf.get_h5_attribute(str(COMPUTER_NAME_HASH_UUID)) == ""
+
+        wf.get_h5_file().close()  # safe clean-up when running CI on windows systems

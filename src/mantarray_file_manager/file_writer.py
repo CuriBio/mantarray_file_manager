@@ -7,11 +7,15 @@ from typing import Optional
 
 import h5py
 
+from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
+from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
+from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
+from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .exceptions import UnsupportedFileMigrationPath
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
@@ -82,6 +86,10 @@ def migrate_to_next_version(
     for iter_metadata_key, iter_metadata_value in (
         (BARCODE_IS_FROM_SCANNER_UUID, False),
         (IS_FILE_ORIGINAL_UNTRIMMED_UUID, True),
+        (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, 0),
+        (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, 0),
+        (BACKEND_LOG_UUID, ""),
+        (COMPUTER_NAME_HASH_UUID, ""),
     ):
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
     new_file.close()

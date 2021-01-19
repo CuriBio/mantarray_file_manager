@@ -5,6 +5,8 @@ Changelog for Mantarray File Manager
 ------------------
 
 - Added file migration function to go from v0.3.1 to v0.4.1
+- Bumped H5 File version to 0.4.2
+- Added metadata for original file version from Mantarray, file version prior to migration, and time migration was performed
 
 
 0.4.5 (2021-01-13)

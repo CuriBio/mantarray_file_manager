@@ -44,7 +44,7 @@ ADC_TISSUE_OFFSET_UUID = uuid.UUID("41069860-159f-49f2-a59d-401783c1ecb4")
 ADC_REF_OFFSET_UUID = uuid.UUID("dc10066c-abf2-42b6-9b94-5e52d1ea9bfc")
 PLATE_BARCODE_UUID = uuid.UUID("cf60afef-a9f0-4bc3-89e9-c665c6bb6941")
 BACKEND_LOG_UUID = uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
-COMPUTER_NAME_HASH = uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
+COMPUTER_NAME_HASH_UUID = uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
 BARCODE_IS_FROM_SCANNER_UUID = uuid.UUID("7d026e86-da70-4464-9181-dc0ce2d47bd1")
 IS_FILE_ORIGINAL_UNTRIMMED_UUID = uuid.UUID("52231a24-97a3-497a-917c-86c780d9993f")
 TRIMMED_TIME_FROM_ORIGINAL_START_UUID = uuid.UUID(
@@ -52,6 +52,10 @@ TRIMMED_TIME_FROM_ORIGINAL_START_UUID = uuid.UUID(
 )
 TRIMMED_TIME_FROM_ORIGINAL_END_UUID = uuid.UUID("55f6770d-c369-42ce-a437-5ed89c3cb1f8")
 ORIGINAL_FILE_VERSION_UUID = uuid.UUID("cd1b4063-4a87-4a57-bc12-923ff4890844")
+UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID = uuid.UUID(
+    "399b2148-09d4-418b-a132-e37df2721938"
+)
+FILE_VERSION_PRIOR_TO_MIGRATION_UUID = uuid.UUID("399b2148-09d4-418b-a132-e37df2721938")
 METADATA_UUID_DESCRIPTIONS = immutabledict(
     {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
@@ -82,12 +86,14 @@ METADATA_UUID_DESCRIPTIONS = immutabledict(
         ADC_REF_OFFSET_UUID: "ADC Reference Sensor Offset",
         PLATE_BARCODE_UUID: "Plate Barcode",
         BACKEND_LOG_UUID: "Backend log file identifier",
-        COMPUTER_NAME_HASH: "SHA512 digest of computer name",
+        COMPUTER_NAME_HASH_UUID: "SHA512 digest of computer name",
         BARCODE_IS_FROM_SCANNER_UUID: "Is this barcode obtained from the scanner",
         IS_FILE_ORIGINAL_UNTRIMMED_UUID: "Is this an original file straight from the instrument and untrimmed",
         TRIMMED_TIME_FROM_ORIGINAL_START_UUID: "Number of centimilliseconds that has been trimmed off the beginning of when the original data started",
         TRIMMED_TIME_FROM_ORIGINAL_END_UUID: "Number of centimilliseconds that has been trimmed off the end of when the original data ended",
         ORIGINAL_FILE_VERSION_UUID: "The original version of the file when recorded, prior to any migrations to newer versions/formats.",
+        UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID: "Timestamp when this file was migrated from an earlier version.",
+        FILE_VERSION_PRIOR_TO_MIGRATION_UUID: "File format version that this file was migrated from",
     }
 )
 DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"

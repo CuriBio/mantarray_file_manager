@@ -10,7 +10,7 @@ from .constants import ADC_TISSUE_OFFSET_UUID
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import CENTIMILLISECONDS_PER_SECOND
-from .constants import COMPUTER_NAME_HASH
+from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
 from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
@@ -18,6 +18,7 @@ from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
+from .constants import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from .constants import HARDWARE_TEST_RECORDING_UUID
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .constants import MAIN_FIRMWARE_VERSION_UUID
@@ -43,6 +44,7 @@ from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
 from .constants import UTC_FIRST_REF_DATA_POINT_UUID
 from .constants import UTC_FIRST_TISSUE_DATA_POINT_UUID
+from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
 from .constants import WELL_COLUMN_UUID
 from .constants import WELL_INDEX_UUID
 from .constants import WELL_NAME_UUID
@@ -104,7 +106,7 @@ __all__ = [
     "UnsupportedMantarrayFileVersionError",
     "FileAttributeNotFoundError",
     "BACKEND_LOG_UUID",
-    "COMPUTER_NAME_HASH",
+    "COMPUTER_NAME_HASH_UUID",
     "BARCODE_IS_FROM_SCANNER_UUID",
     "IS_FILE_ORIGINAL_UNTRIMMED_UUID",
     "TRIMMED_TIME_FROM_ORIGINAL_START_UUID",
@@ -120,4 +122,6 @@ __all__ = [
     "WellFile_0_3_1",
     "file_writer",
     "WELL_FILE_CLASSES",
+    "UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID",
+    "FILE_VERSION_PRIOR_TO_MIGRATION_UUID",
 ]
