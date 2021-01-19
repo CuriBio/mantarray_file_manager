@@ -62,6 +62,7 @@ from .files import WELL_FILE_CLASSES
 from .files import WellFile
 from .files import WellFile_0_3_1
 from .files import WellFile_0_4_1
+from .files import WellFile_0_4_2
 
 
 __all__ = [
@@ -120,6 +121,7 @@ __all__ = [
     "BasicWellFile",
     "WellFile_0_4_1",
     "WellFile_0_3_1",
+    "WellFile_0_4_2",
     "file_writer",
     "WELL_FILE_CLASSES",
     "UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID",

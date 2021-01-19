@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """Classes and functions for writing and migrating files."""
+import datetime
 import ntpath
 import os
 from os import getcwd
 from typing import Optional
+from typing import Tuple
+from typing import Union
+import uuid
 
 import h5py
 
@@ -11,11 +15,15 @@ from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
+from .constants import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
+from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
+from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
 from .exceptions import UnsupportedFileMigrationPath
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
@@ -89,15 +97,26 @@ def migrate_to_next_version(
     old_reference_data = old_h5_file["reference_sensor_readings"]
     new_file.create_dataset("reference_sensor_readings", data=old_reference_data)
 
-    # new metadata in v0.4.1
-    for iter_metadata_key, iter_metadata_value in (
-        (BARCODE_IS_FROM_SCANNER_UUID, False),
-        (IS_FILE_ORIGINAL_UNTRIMMED_UUID, True),
-        (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, 0),
-        (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, 0),
-        (BACKEND_LOG_UUID, ""),
-        (COMPUTER_NAME_HASH_UUID, ""),
-    ):
+    # new metadata
+    metadata_to_create: Tuple[Tuple[uuid.UUID, Union[str, bool, int, float]], ...]
+    if new_file_version == "0.4.1":
+        metadata_to_create = (
+            (BARCODE_IS_FROM_SCANNER_UUID, False),
+            (IS_FILE_ORIGINAL_UNTRIMMED_UUID, True),
+            (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, 0),
+            (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, 0),
+            (BACKEND_LOG_UUID, ""),
+            (COMPUTER_NAME_HASH_UUID, ""),
+        )
+    else:  # v0.4.2
+        utc_now = datetime.datetime.utcnow()
+        formatted_time = utc_now.strftime(DATETIME_STR_FORMAT)
+        metadata_to_create = (
+            (ORIGINAL_FILE_VERSION_UUID, ""),
+            (FILE_VERSION_PRIOR_TO_MIGRATION_UUID, file_version),
+            (UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID, formatted_time),
+        )
+    for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
     new_file.close()

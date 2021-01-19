@@ -20,6 +20,7 @@ from mantarray_file_manager import WELL_FILE_CLASSES
 from mantarray_file_manager import WellFile
 from mantarray_file_manager import WellFile_0_3_1
 from mantarray_file_manager import WellFile_0_4_1
+from mantarray_file_manager import WellFile_0_4_2
 from mantarray_file_manager import WellRecordingsNotFromSameSessionError
 import numpy as np
 import pytest
@@ -516,5 +517,5 @@ def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
 
 def test_WELL_FILE_CLASSES():
     assert WELL_FILE_CLASSES == immutabledict(
-        {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1}
+        {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1, "0.4.2": WellFile_0_4_2}
     )

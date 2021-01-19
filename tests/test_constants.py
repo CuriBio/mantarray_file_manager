@@ -62,7 +62,7 @@ def test_time_conversion():
 
 def test_versions():
     assert MIN_SUPPORTED_FILE_VERSION == "0.1.1"
-    assert CURRENT_HDF5_FILE_FORMAT_VERSION == "0.4.1"
+    assert CURRENT_HDF5_FILE_FORMAT_VERSION == "0.4.2"
     assert FILE_FORMAT_VERSION_METADATA_KEY == "File Format Version"
 
 
@@ -139,7 +139,7 @@ def test_metadata_UUIDs():
         "399b2148-09d4-418b-a132-e37df2721938"
     )
     assert FILE_VERSION_PRIOR_TO_MIGRATION_UUID == uuid.UUID(
-        "399b2148-09d4-418b-a132-e37df2721938"
+        "11b4945b-3cf3-4f67-8bee-7abc3c449756"
     )
 
     assert METADATA_UUID_DESCRIPTIONS == {
@@ -183,4 +183,4 @@ def test_metadata_UUIDs():
 
 
 def test_file_migration_paths():
-    assert FILE_MIGRATION_PATHS == {"0.3.1": "0.4.1"}
+    assert FILE_MIGRATION_PATHS == {"0.3.1": "0.4.1", "0.4.1": "0.4.2"}

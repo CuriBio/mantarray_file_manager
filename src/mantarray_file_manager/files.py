@@ -481,6 +481,18 @@ class WellFile_0_4_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1
     """
 
 
+class WellFile_0_4_2(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
+    WellFile
+):
+    """Historical class to open WellFiles in version 0.4.2.
+
+    Typically kept around for test cases and migration scripts.
+
+    If the main WellFile object stops being compatible, then old
+    deprecated methods should be moved here.
+    """
+
+
 class PlateRecording:
     """Wrapper around 24 WellFiles for a single plate of data.
 
@@ -535,4 +547,6 @@ class PlateRecording:
         return tuple(sorted(self._wells_by_index.keys()))
 
 
-WELL_FILE_CLASSES = immutabledict({"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1})
+WELL_FILE_CLASSES = immutabledict(
+    {"0.3.1": WellFile_0_3_1, "0.4.1": WellFile_0_4_1, "0.4.2": WellFile_0_4_2}
+)
