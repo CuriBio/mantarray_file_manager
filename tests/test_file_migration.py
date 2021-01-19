@@ -17,7 +17,9 @@ from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from mantarray_file_manager import UnsupportedFileMigrationPath
 from mantarray_file_manager import WELL_INDEX_UUID
 from mantarray_file_manager import WELL_NAME_UUID
+from mantarray_file_manager import WellFile_0_3_1
 from mantarray_file_manager import WellFile_0_4_1
+import numpy as np
 import pytest
 from stdlib_utils import get_current_file_abs_directory
 
@@ -61,6 +63,7 @@ def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file__Then_the_new_fil
             PATH_TO_GENERIC_0_3_1_FILE, working_directory=tmp_dir
         )
         wf = WellFile_0_4_1(new_file_path)
+        old_wf = WellFile_0_3_1(PATH_TO_GENERIC_0_3_1_FILE)
         assert wf.get_file_version() == "0.4.1"
 
         # old metadata (since it is all copied by default, testing a subset seems reasonable for now)
@@ -77,4 +80,13 @@ def test_migrate_to_next_version__When_invoked_on_a_0_3_1_file__Then_the_new_fil
         assert wf.get_h5_attribute(str(BACKEND_LOG_UUID)) == ""
         assert wf.get_h5_attribute(str(COMPUTER_NAME_HASH_UUID)) == ""
 
+        # raw data
+        np.testing.assert_array_equal(
+            wf.get_raw_tissue_reading(), old_wf.get_raw_tissue_reading()
+        )
+        np.testing.assert_array_equal(
+            wf.get_raw_reference_reading(), old_wf.get_raw_reference_reading()
+        )
+
         wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+        old_wf.get_h5_file().close()  # safe clean-up when running CI on windows systems

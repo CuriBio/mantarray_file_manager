@@ -82,6 +82,13 @@ def migrate_to_next_version(
     old_metadata_keys.remove(FILE_FORMAT_VERSION_METADATA_KEY)
     for iter_metadata_key in old_metadata_keys:
         new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
+
+    # transfer data
+    old_tissue_data = old_h5_file["tissue_sensor_readings"]
+    new_file.create_dataset("tissue_sensor_readings", data=old_tissue_data)
+    old_reference_data = old_h5_file["reference_sensor_readings"]
+    new_file.create_dataset("reference_sensor_readings", data=old_reference_data)
+
     # new metadata in v0.4.1
     for iter_metadata_key, iter_metadata_value in (
         (BARCODE_IS_FROM_SCANNER_UUID, False),
@@ -92,5 +99,6 @@ def migrate_to_next_version(
         (COMPUTER_NAME_HASH_UUID, ""),
     ):
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
+
     new_file.close()
     return new_file_name

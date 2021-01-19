@@ -20,3 +20,5 @@ def test_MantarrayH5FileCreator__sets_file_name_and_userblock_size_and_file_vers
         assert (
             test_file.attrs["File Format Version"] == CURRENT_HDF5_FILE_FORMAT_VERSION
         )
+
+        wf.get_h5_file().close()  # cleanup when running CI on windows systems
