@@ -26,6 +26,7 @@ from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
+from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
@@ -180,4 +181,49 @@ def h5_file_trimmer(
         minimum=0,
     )
     validate_int(value=from_end, allow_null=True, minimum=0)
-    return file_path
+    if not from_start and not from_end:
+        raise UnsupportedArgumentError()
+
+    working_directory = getcwd()
+    file_version = _get_format_version_of_file(file_path)
+    old_file = WELL_FILE_CLASSES[file_version](file_path)
+
+    old_file_basename = ntpath.basename(file_path)
+    old_file_basename_no_suffix = old_file_basename[:-3]
+
+    # add os.path.join
+    new_file_name = os.path.join(
+        working_directory,
+        f"{old_file_basename_no_suffix}__trimmed_{from_start}_{from_end}.h5",
+    )
+
+    new_file = MantarrayH5FileCreator(new_file_name)
+
+    # old metadata
+    old_h5_file = old_file.get_h5_file()
+    old_metadata_keys = set(old_h5_file.attrs.keys())
+    old_metadata_keys.remove(FILE_FORMAT_VERSION_METADATA_KEY)
+
+    for iter_metadata_key in old_metadata_keys:
+        new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
+
+    # new metadata
+    metadata_to_create: Tuple[Tuple[uuid.UUID, Union[str, bool, int, float]], ...]
+
+    metadata_to_create = (
+        (IS_FILE_ORIGINAL_UNTRIMMED_UUID, False),
+        (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, from_start),
+        (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, from_end),
+    )
+
+    for iter_metadata_key, iter_metadata_value in metadata_to_create:
+        new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
+
+    # # transfer data
+    # old_tissue_data = old_h5_file["tissue_sensor_readings"]
+    # new_file.create_dataset("tissue_sensor_readings", data=old_tissue_data)
+    # old_reference_data = old_h5_file["reference_sensor_readings"]
+    # new_file.create_dataset("reference_sensor_readings", data=old_reference_data)
+
+    new_file.close()
+    return new_file_name

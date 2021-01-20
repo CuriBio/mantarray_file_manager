@@ -56,3 +56,10 @@ class UnsupportedFileMigrationPath(Exception):
         super().__init__(
             f"There is no supported migration path from version {file_version}. Supported paths are: {FILE_MIGRATION_PATHS}."
         )
+
+
+class UnsupportedArgumentError(Exception):
+    """Error raised if the arguments indicating the amount of centimilliseconds to be trimmed from the start and end are both None."""
+
+    def __init__(self) -> None:
+        super().__init__("Both arguments cannot be None.")

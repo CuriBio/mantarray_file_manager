@@ -7,10 +7,19 @@ from immutable_data_validation.errors import ValidationCollectionMinimumValueErr
 from immutable_data_validation.errors import ValidationCollectionNotAnIntegerError
 from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
+from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MantarrayH5FileCreator
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
+from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
+from mantarray_file_manager import WELL_INDEX_UUID
+from mantarray_file_manager import WELL_NAME_UUID
+from mantarray_file_manager import WellFile
+from mantarray_file_manager.exceptions import UnsupportedArgumentError
 from mantarray_file_manager.file_writer import h5_file_trimmer
 import pytest
 from stdlib_utils import get_current_file_abs_directory
+
+from .fixtures import PATH_TO_GENERIC_0_4_1_FILE
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -50,3 +59,41 @@ def test_h5_file_trimmer__When_start_arg_is_not_an_int__Then_raises_an_error():
 def test_h5_file_trimmer__When_end_arg_is_not_valid__Then_raises_an_error():
     with pytest.raises(ValidationCollectionMinimumValueError):
         h5_file_trimmer(EXPECTED_PATH, from_start=0, from_end=-1)
+
+
+def test_h5_file_trimmer__When_both_args_are_None__Then_raises_an_error():
+    with pytest.raises(UnsupportedArgumentError):
+        h5_file_trimmer(EXPECTED_PATH, from_start=None, from_end=None)
+
+
+def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_metadata_except_for_the_two_metadata_pertaining_to_trimming():
+    new_file_path = h5_file_trimmer(PATH_TO_GENERIC_0_4_1_FILE, 0, 0)
+
+    wf = WellFile(new_file_path)
+    old_wf = WellFile(PATH_TO_GENERIC_0_4_1_FILE)
+
+    # old metadata (since it is all copied by default, testing a subset seems reasonable for now)
+    assert wf.get_h5_attribute(str(WELL_INDEX_UUID)) == old_wf.get_h5_attribute(
+        str(WELL_INDEX_UUID)
+    )
+    assert wf.get_h5_attribute(str(WELL_NAME_UUID)) == old_wf.get_h5_attribute(
+        str(WELL_NAME_UUID)
+    )
+
+    # new metadata
+    assert not wf.get_h5_attribute(
+        str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
+    )  # Anna (1/20/21): tried using `is False` but got weird errors saying `assert False is False` failed...unsure why
+    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 0
+    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 0
+
+    # # raw data
+    # np.testing.assert_array_equal(
+    #     wf.get_raw_tissue_reading(), old_wf.get_raw_tissue_reading()
+    # )
+    # np.testing.assert_array_equal(
+    #     wf.get_raw_reference_reading(), old_wf.get_raw_reference_reading()
+    # )
+
+    wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+    old_wf.get_h5_file().close()
