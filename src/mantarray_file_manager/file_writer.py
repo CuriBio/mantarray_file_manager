@@ -10,6 +10,7 @@ from typing import Union
 import uuid
 
 import h5py
+from immutable_data_validation.wrapped_vc_validators import validate_int
 
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
@@ -156,3 +157,27 @@ def migrate_to_latest_version(
         current_file_path = migrate_to_next_version(
             current_file_path, working_directory=working_directory
         )
+
+
+def h5_file_trimmer(
+    file_path: str,
+    from_start: int,
+    from_end: int,
+) -> str:
+    """Trims an H5 file.
+
+    Args:
+        file_path: path to the H5 file
+        from_start: centimilliseconds to trim from the start
+        from_end: centimilliseconds to trim from the end
+
+    Returns:
+        The path to the trimmed H5 file.
+    """
+    validate_int(
+        value=from_start,
+        allow_null=True,
+        minimum=0,
+    )
+    validate_int(value=from_end, allow_null=True, minimum=0)
+    return file_path
