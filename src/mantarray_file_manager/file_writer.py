@@ -26,10 +26,12 @@ from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
+from .exceptions import TooTrimmedError
 from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
+from .files import WellFile
 
 
 class MantarrayH5FileCreator(
@@ -185,8 +187,7 @@ def h5_file_trimmer(
         raise UnsupportedArgumentError()
 
     working_directory = getcwd()
-    file_version = _get_format_version_of_file(file_path)
-    old_file = WELL_FILE_CLASSES[file_version](file_path)
+    old_file = WellFile(file_path)
 
     old_file_basename = ntpath.basename(file_path)
     old_file_basename_no_suffix = old_file_basename[:-3]
@@ -219,7 +220,28 @@ def h5_file_trimmer(
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
-    # # transfer data
+    # transfer data
+    old_raw_data = old_file.get_raw_reference_reading()
+
+    start_index = 0
+    if from_start > old_raw_data[0][start_index]:
+        while from_start > old_raw_data[0][start_index]:
+            start_index += 1
+        start_index -= 1
+
+    last_index = len(old_raw_data[0]) - 1
+    time_elapsed = 0
+    if from_end > time_elapsed:
+        while from_end > time_elapsed:
+            time_elapsed += (
+                old_raw_data[0][last_index] - old_raw_data[0][last_index - 1]
+            )
+            last_index -= 1
+        last_index += 1
+
+    if start_index >= last_index:
+        raise TooTrimmedError(from_start, from_end)
+
     # old_tissue_data = old_h5_file["tissue_sensor_readings"]
     # new_file.create_dataset("tissue_sensor_readings", data=old_tissue_data)
     # old_reference_data = old_h5_file["reference_sensor_readings"]

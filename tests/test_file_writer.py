@@ -14,6 +14,7 @@ from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from mantarray_file_manager import WELL_INDEX_UUID
 from mantarray_file_manager import WELL_NAME_UUID
 from mantarray_file_manager import WellFile
+from mantarray_file_manager.exceptions import TooTrimmedError
 from mantarray_file_manager.exceptions import UnsupportedArgumentError
 from mantarray_file_manager.file_writer import h5_file_trimmer
 import pytest
@@ -66,8 +67,8 @@ def test_h5_file_trimmer__When_both_args_are_None__Then_raises_an_error():
         h5_file_trimmer(EXPECTED_PATH, from_start=None, from_end=None)
 
 
-def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_metadata_except_for_the_two_metadata_pertaining_to_trimming():
-    new_file_path = h5_file_trimmer(PATH_TO_GENERIC_0_4_1_FILE, 0, 0)
+def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_metadata_except_for_the_three_metadata_pertaining_to_trimming():
+    new_file_path = h5_file_trimmer(PATH_TO_GENERIC_0_4_1_FILE, 0, 1)
 
     wf = WellFile(new_file_path)
     old_wf = WellFile(PATH_TO_GENERIC_0_4_1_FILE)
@@ -85,15 +86,12 @@ def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_meta
         str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
     )  # Anna (1/20/21): tried using `is False` but got weird errors saying `assert False is False` failed...unsure why
     assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 0
-    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 0
-
-    # # raw data
-    # np.testing.assert_array_equal(
-    #     wf.get_raw_tissue_reading(), old_wf.get_raw_tissue_reading()
-    # )
-    # np.testing.assert_array_equal(
-    #     wf.get_raw_reference_reading(), old_wf.get_raw_reference_reading()
-    # )
+    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 1
 
     wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
-    old_wf.get_h5_file().close()
+    old_wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+
+
+def test_h5_file_trimmer__When_invoked_on_a_file_with_too_much_time_trimmed__Then_raises_TooTrimmedError():
+    with pytest.raises(TooTrimmedError):
+        h5_file_trimmer(EXPECTED_PATH, from_start=6000000, from_end=2000000)

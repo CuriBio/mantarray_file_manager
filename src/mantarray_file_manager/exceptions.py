@@ -63,3 +63,12 @@ class UnsupportedArgumentError(Exception):
 
     def __init__(self) -> None:
         super().__init__("Both arguments cannot be None.")
+
+
+class TooTrimmedError(Exception):
+    """Error raised if the amount of centimilliseconds to be trimmed from the start and end exceeds the length of the recording."""
+
+    def __init__(self, from_start: int, from_end: int) -> None:
+        super().__init__(
+            f"When trimming {from_start} centimilliseconds from the start and {from_end} centimilliseconds from the end, the length of the recording is exceeded."
+        )
