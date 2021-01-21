@@ -4,6 +4,7 @@ import datetime
 import ntpath
 import os
 from os import getcwd
+from typing import Any
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -11,6 +12,8 @@ import uuid
 
 import h5py
 from immutable_data_validation.wrapped_vc_validators import validate_int
+from nptyping import NDArray
+import numpy as np
 
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
@@ -221,31 +224,60 @@ def h5_file_trimmer(
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
     # transfer data
-    old_raw_data = old_file.get_raw_reference_reading()
+    old_raw_reference_data = old_file.get_raw_reference_reading()
+    old_tissue_data = old_file.get_raw_tissue_reading()
 
-    start_index = 0
-    if from_start > old_raw_data[0][start_index]:
-        while from_start > old_raw_data[0][start_index]:
-            start_index += 1
-        start_index -= 1
+    # print(old_tissue_data)
+    # print(old_raw_reference_data)
 
-    last_index = len(old_raw_data[0]) - 1
-    time_elapsed = 0
-    if from_end > time_elapsed:
-        while from_end > time_elapsed:
-            time_elapsed += (
-                old_raw_data[0][last_index] - old_raw_data[0][last_index - 1]
-            )
-            last_index -= 1
-        last_index += 1
+    tissue_data_start_index = _find_start_index(from_start, old_tissue_data)
+    tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
-    if start_index >= last_index:
+    reference_data_start_index = _find_start_index(from_start, old_raw_reference_data)
+    reference_data_last_index = _find_last_index(
+        from_end, old_raw_reference_data
+    )  # TODO: need to change this
+
+    if (
+        reference_data_start_index >= reference_data_last_index
+        or tissue_data_start_index >= tissue_data_last_index
+    ):
         raise TooTrimmedError(from_start, from_end)
 
-    # old_tissue_data = old_h5_file["tissue_sensor_readings"]
-    # new_file.create_dataset("tissue_sensor_readings", data=old_tissue_data)
-    # old_reference_data = old_h5_file["reference_sensor_readings"]
-    # new_file.create_dataset("reference_sensor_readings", data=old_reference_data)
+    new_tissue_sensor_data = old_h5_file.get("tissue_sensor_readings")
+    new_tissue_sensor_data = np.array(new_tissue_sensor_data)
+    new_tissue_sensor_data = new_tissue_sensor_data[
+        tissue_data_start_index : tissue_data_last_index + 1
+    ]  # +1 because needs to be inclusive of last index
+
+    new_reference_sensor_data = old_h5_file.get("reference_sensor_readings")
+    new_reference_sensor_data = np.array(new_reference_sensor_data)
+    new_reference_sensor_data = new_reference_sensor_data[
+        reference_data_start_index : reference_data_last_index + 1
+    ]  # +1 because needs to be indclusive of last index
+
+    new_file.create_dataset("tissue_sensor_readings", data=new_tissue_sensor_data)
+    new_file.create_dataset("reference_sensor_readings", data=new_reference_sensor_data)
 
     new_file.close()
     return new_file_name
+
+
+def _find_start_index(from_start: int, old_data: NDArray[(2, Any), int]) -> int:
+    start_index = 0
+    if from_start > old_data[0][start_index]:
+        while start_index < len(old_data[0]) and from_start >= old_data[0][start_index]:
+            start_index = start_index + 1
+        start_index = start_index - 1
+    return start_index
+
+
+def _find_last_index(from_end: int, old_data: NDArray[(2, Any), int]) -> int:
+    last_index = len(old_data[0]) - 1
+    time_elapsed = 0
+    if from_end > time_elapsed:
+        while last_index > 0 and from_end >= time_elapsed:
+            time_elapsed += old_data[0][last_index] - old_data[0][last_index - 1]
+            last_index -= 1
+        last_index += 1
+    return last_index

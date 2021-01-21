@@ -95,3 +95,41 @@ def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_meta
 def test_h5_file_trimmer__When_invoked_on_a_file_with_too_much_time_trimmed__Then_raises_TooTrimmedError():
     with pytest.raises(TooTrimmedError):
         h5_file_trimmer(EXPECTED_PATH, from_start=6000000, from_end=2000000)
+
+
+def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_in_between_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data():
+    new_file_path = h5_file_trimmer(PATH_TO_GENERIC_0_4_1_FILE, 70, 70)
+
+    wf = WellFile(new_file_path)
+
+    # raw data
+    reference_data = wf.get_raw_reference_reading()
+    # assert raw_reference_data[0][0] == 60
+    assert reference_data[1][0] == -2713715
+    # assert raw_reference_data[0][-1] == 1182940
+    assert reference_data[1][-1] == -4181722
+
+    tissue_data = wf.get_raw_tissue_reading()
+    assert tissue_data[1][0] == -974940
+    assert tissue_data[1][-1] == 1737936
+
+    wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+
+
+def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data():
+    new_file_path = h5_file_trimmer(PATH_TO_GENERIC_0_4_1_FILE, 100, 80)
+
+    wf = WellFile(new_file_path)
+
+    # raw data
+    reference_data = wf.get_raw_reference_reading()
+    # assert raw_reference_data[0][0] == 60
+    assert reference_data[1][0] == -2705327
+    # assert raw_reference_data[0][-1] == 1182940
+    assert reference_data[1][-1] == -4173333
+
+    tissue_data = wf.get_raw_tissue_reading()
+    assert tissue_data[1][0] == -974940
+    assert tissue_data[1][-1] == 1737936
+
+    wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
