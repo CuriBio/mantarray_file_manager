@@ -36,6 +36,8 @@ from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
+np.set_printoptions(edgeitems=10)
+
 
 class MantarrayH5FileCreator(
     h5py.File
@@ -206,7 +208,15 @@ def h5_file_trimmer(
     # old metadata
     old_h5_file = old_file.get_h5_file()
     old_metadata_keys = set(old_h5_file.attrs.keys())
-    old_metadata_keys.remove(FILE_FORMAT_VERSION_METADATA_KEY)
+    old_from_end = 0
+
+    if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in old_metadata_keys:
+        old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
+        old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
+        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
+        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
+        old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+        from_start += old_from_start
 
     for iter_metadata_key in old_metadata_keys:
         new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
@@ -217,7 +227,7 @@ def h5_file_trimmer(
     metadata_to_create = (
         (IS_FILE_ORIGINAL_UNTRIMMED_UUID, False),
         (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, from_start),
-        (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, from_end),
+        (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, from_end + old_from_end),
     )
 
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
@@ -226,9 +236,6 @@ def h5_file_trimmer(
     # transfer data
     old_raw_reference_data = old_file.get_raw_reference_reading()
     old_tissue_data = old_file.get_raw_tissue_reading()
-
-    # print(old_tissue_data)
-    # print(old_raw_reference_data)
 
     tissue_data_start_index = _find_start_index(from_start, old_tissue_data)
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
@@ -244,13 +251,13 @@ def h5_file_trimmer(
     ):
         raise TooTrimmedError(from_start, from_end)
 
-    new_tissue_sensor_data = old_h5_file.get("tissue_sensor_readings")
+    new_tissue_sensor_data = old_h5_file["tissue_sensor_readings"]
     new_tissue_sensor_data = np.array(new_tissue_sensor_data)
     new_tissue_sensor_data = new_tissue_sensor_data[
         tissue_data_start_index : tissue_data_last_index + 1
     ]  # +1 because needs to be inclusive of last index
 
-    new_reference_sensor_data = old_h5_file.get("reference_sensor_readings")
+    new_reference_sensor_data = old_h5_file["reference_sensor_readings"]
     new_reference_sensor_data = np.array(new_reference_sensor_data)
     new_reference_sensor_data = new_reference_sensor_data[
         reference_data_start_index : reference_data_last_index + 1
