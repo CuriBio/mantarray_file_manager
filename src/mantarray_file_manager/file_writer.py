@@ -197,14 +197,6 @@ def h5_file_trimmer(
     old_file_basename = ntpath.basename(file_path)
     old_file_basename_no_suffix = old_file_basename[:-3]
 
-    # add os.path.join
-    new_file_name = os.path.join(
-        working_directory,
-        f"{old_file_basename_no_suffix}__trimmed_{from_start}_{from_end}.h5",
-    )
-
-    new_file = MantarrayH5FileCreator(new_file_name)
-
     # old metadata
     old_h5_file = old_file.get_h5_file()
     old_metadata_keys = set(old_h5_file.attrs.keys())
@@ -213,10 +205,21 @@ def h5_file_trimmer(
     if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in old_metadata_keys:
         old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
         old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
+
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
         old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+
         from_start += old_from_start
+
+        old_file_basename_no_suffix = old_file_basename_no_suffix.split("__trimmed")[0]
+
+    new_file_name = os.path.join(
+        working_directory,
+        f"{old_file_basename_no_suffix}__trimmed_{from_start}_{from_end + old_from_end}.h5",
+    )
+
+    new_file = MantarrayH5FileCreator(new_file_name)
 
     for iter_metadata_key in old_metadata_keys:
         new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
@@ -241,9 +244,7 @@ def h5_file_trimmer(
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
     reference_data_start_index = _find_start_index(from_start, old_raw_reference_data)
-    reference_data_last_index = _find_last_index(
-        from_end, old_raw_reference_data
-    )  # TODO: need to change this
+    reference_data_last_index = _find_last_index(from_end, old_raw_reference_data)
 
     if (
         reference_data_start_index >= reference_data_last_index
