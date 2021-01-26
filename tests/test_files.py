@@ -191,6 +191,25 @@ def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     assert arr[1, 150] == 817496
 
 
+def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0_when_trimmed():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2__trimmed_320_320.h5",
+        )
+    )
+    arr = wf.get_raw_tissue_reading()
+    assert arr.shape == (2, 846)
+    assert arr.dtype == np.int32
+    assert arr[0, 0] == 440
+    assert arr[1, 0] == -950718
+
+    expected_timestep = 160  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+
+
 def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0(
     generic_well_file_0_3_1,
 ):
@@ -208,6 +227,25 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
     )  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
     assert arr[0, 1] - arr[0, 0] == expected_timestep
     assert arr[1, 150] == 255013
+
+
+def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0_when_trimmed():
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2__trimmed_320_320.h5",
+        )
+    )
+    arr = wf.get_raw_reference_reading()
+    assert arr.shape == (2, 29559)
+    assert arr.dtype == np.int32
+    assert arr[0, 0] == 340
+    assert arr[1, 0] == -2654995
+
+    expected_timestep = 40  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
 
 
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(

@@ -223,19 +223,13 @@ def h5_file_trimmer(
     old_raw_reference_data = old_file.get_raw_reference_reading()
     old_tissue_data = old_file.get_raw_tissue_reading()
 
+    # print(old_raw_reference_data)
+    # print(old_tissue_data)
+
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
     tissue_data_start_index = _find_start_index(from_start, old_tissue_data)
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
-
-    reference_data_start_index = _find_start_index(from_start, old_raw_reference_data)
-    reference_data_last_index = _find_last_index(from_end, old_raw_reference_data)
-
-    if (
-        reference_data_start_index >= reference_data_last_index
-        or tissue_data_start_index >= tissue_data_last_index
-    ):
-        raise TooTrimmedError(from_start, from_end)
 
     actual_start_trimmed = (
         old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
@@ -243,6 +237,19 @@ def h5_file_trimmer(
     actual_end_trimmed = (
         tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
     )
+
+    reference_data_start_index = _find_start_index(
+        actual_end_trimmed, old_raw_reference_data
+    )
+    reference_data_last_index = _find_last_index(
+        actual_end_trimmed, old_raw_reference_data
+    )
+
+    if (
+        reference_data_start_index >= reference_data_last_index
+        or tissue_data_start_index >= tissue_data_last_index
+    ):
+        raise TooTrimmedError(from_start, from_end)
 
     if actual_start_trimmed != from_start:
 
@@ -299,7 +306,7 @@ def h5_file_trimmer(
     return new_file_name
 
 
-def _find_start_index(from_start: int, old_data: NDArray[(2, Any), int]) -> int:
+def _find_start_index(from_start: int, old_data: NDArray[(Any, Any), int]) -> int:
     start_index = 0
     time_elapsed = 0
     if from_start > time_elapsed:

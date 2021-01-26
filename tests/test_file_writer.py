@@ -115,9 +115,9 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_in_between_time
     # raw data
     reference_data = wf.get_raw_reference_reading()
     # assert raw_reference_data[0][0] == 60
-    assert reference_data[1][0] == -2713715
+    assert reference_data[1][0] == -2722104
     # assert raw_reference_data[0][-1] == 1182940
-    assert reference_data[1][-1] == -4181722
+    assert reference_data[1][-1] == -4190110
 
     tissue_data = wf.get_raw_tissue_reading()
     assert tissue_data[1][0] == -974940
@@ -136,10 +136,14 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points_
 
     # raw data
     tissue_data = wf.get_raw_tissue_reading()
+    assert tissue_data[0][0] == 440
+    assert tissue_data[0][-1] == 135640
     assert tissue_data[1][0] == -950718
     assert tissue_data[1][-1] == 1713713
 
     reference_data = wf.get_raw_reference_reading()
+    assert reference_data[0][0] == 340
+    assert reference_data[0][-1] == 1182660
     assert reference_data[1][0] == -2654995
     assert reference_data[1][-1] == -4123001
 
@@ -156,17 +160,20 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points_
 #     assert not wf.get_h5_attribute(
 #         str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
 #     )  # Anna (1/20/21): tried using `is False` but got weird errors saying `assert False is False` failed...unsure why
-#     assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 300
-#     assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 280
+#     assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 480
+#     assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 480
 
 #     # raw data
-#     reference_data = wf.get_raw_reference_reading()
-#     assert reference_data[1][0] == -2646606
-#     assert reference_data[1][-1] == -4131390
-
 #     tissue_data = wf.get_raw_tissue_reading()
-#     assert tissue_data[1][0] == -962829
-#     assert tissue_data[1][-1] == 1725825
+#     assert tissue_data[0][0] == 480
+#     assert tissue_data[0][-1] == 135360
+#     assert tissue_data[1][0] == -938607
+#     assert tissue_data[1][-1] == 1701602
+
+
+#     reference_data = wf.get_raw_reference_reading()
+#     assert reference_data[1][0] == -962829
+#     assert reference_data[1][-1] == 1725825
 
 #     wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
 

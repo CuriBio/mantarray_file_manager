@@ -23,6 +23,7 @@ from stdlib_utils import get_current_file_abs_directory
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
+from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .constants import MANTARRAY_SERIAL_NUMBER_UUID
 from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
@@ -30,6 +31,7 @@ from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
+from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import USER_ACCOUNT_ID_UUID
 from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
 from .constants import UTC_BEGINNING_RECORDING_UUID
@@ -395,7 +397,6 @@ class WellFile(
                 self.get_timestamp_of_first_tissue_data_point()
                 - timestamp_of_start_index
             )
-
             time_delta_centimilliseconds = int(
                 time_delta
                 / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
@@ -409,6 +410,20 @@ class WellFile(
 
             times = np.arange(len(tissue_data), dtype=np.int32) * time_step
             len_time = len(times)
+
+            file = self.get_h5_file()
+            metadata_keys = set(file.attrs.keys())
+            if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
+                is_untrimmed = self.get_h5_attribute(
+                    str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
+                )
+                if not is_untrimmed:
+                    time_trimmed = self.get_h5_attribute(
+                        str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
+                    )
+                    new_times = times + time_delta_centimilliseconds
+                    start_index = _find_start_index(time_trimmed, new_times)
+                    time_delta_centimilliseconds = new_times[start_index]
 
             self._raw_tissue_reading = np.array(
                 (times + time_delta_centimilliseconds, tissue_data[:len_time]),
@@ -445,16 +460,43 @@ class WellFile(
                 self.get_reference_sampling_period_microseconds()
                 / MICROSECONDS_PER_CENTIMILLISECOND
             )
+
             ref_data = self._h5_file["reference_sensor_readings"]
 
             times = np.arange(len(ref_data), dtype=np.int32) * time_step
             len_time = len(times)
 
+            file = self.get_h5_file()
+            metadata_keys = set(file.attrs.keys())
+            if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
+                is_untrimmed = self.get_h5_attribute(
+                    str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
+                )
+                if not is_untrimmed:
+                    time_trimmed = self.get_h5_attribute(
+                        str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
+                    )
+                    new_times = times + time_delta_centimilliseconds
+                    start_index = _find_start_index(time_trimmed, new_times)
+                    time_delta_centimilliseconds = new_times[start_index]
+
             self._raw_ref_reading = np.array(
                 (times + time_delta_centimilliseconds, ref_data[:len_time]),
                 dtype=np.int32,
             )
+
         return self._raw_ref_reading
+
+
+def _find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
+    start_index = 0
+    time_elapsed = 0
+    if from_start > time_elapsed:
+        while start_index + 1 < len(old_data) and from_start >= time_elapsed:
+            time_elapsed += old_data[start_index + 1] - old_data[start_index]
+            start_index = start_index + 1
+        start_index = start_index - 1
+    return start_index
 
 
 class WellFile_0_3_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
