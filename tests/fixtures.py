@@ -21,6 +21,13 @@ PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
     "MA190190000__2021_01_19_011931__C3.h5",
 )
 
+PATH_TO_GENERIC_0_4_2_FILE = os.path.join(
+    PATH_OF_CURRENT_FILE,
+    "h5",
+    "v0.4.2",
+    "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+)
+
 
 @pytest.fixture(scope="function", name="generic_well_file")
 def fixture_generic_well_file():

@@ -223,9 +223,6 @@ def h5_file_trimmer(
     old_raw_reference_data = old_file.get_raw_reference_reading()
     old_tissue_data = old_file.get_raw_tissue_reading()
 
-    # print(old_raw_reference_data)
-    # print(old_tissue_data)
-
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
     tissue_data_start_index = _find_start_index(from_start, old_tissue_data)
