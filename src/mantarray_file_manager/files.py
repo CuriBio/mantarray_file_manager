@@ -411,19 +411,12 @@ class WellFile(
             times = np.arange(len(tissue_data), dtype=np.int32) * time_step
             len_time = len(times)
 
-            file = self.get_h5_file()
-            metadata_keys = set(file.attrs.keys())
-            if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
-                is_untrimmed = self.get_h5_attribute(
-                    str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
-                )
-                if not is_untrimmed:
-                    time_trimmed = self.get_h5_attribute(
-                        str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
-                    )
-                    new_times = times + time_delta_centimilliseconds
-                    start_index = _find_start_index(time_trimmed, new_times)
-                    time_delta_centimilliseconds = new_times[start_index]
+            new_time_delta = self._check_for_trimmed_file(
+                times, time_delta_centimilliseconds
+            )
+
+            if new_time_delta != 0:
+                time_delta_centimilliseconds = new_time_delta
 
             self._raw_tissue_reading = np.array(
                 (times + time_delta_centimilliseconds, tissue_data[:len_time]),
@@ -466,19 +459,12 @@ class WellFile(
             times = np.arange(len(ref_data), dtype=np.int32) * time_step
             len_time = len(times)
 
-            file = self.get_h5_file()
-            metadata_keys = set(file.attrs.keys())
-            if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
-                is_untrimmed = self.get_h5_attribute(
-                    str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)
-                )
-                if not is_untrimmed:
-                    time_trimmed = self.get_h5_attribute(
-                        str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
-                    )
-                    new_times = times + time_delta_centimilliseconds
-                    start_index = _find_start_index(time_trimmed, new_times)
-                    time_delta_centimilliseconds = new_times[start_index]
+            new_time_delta = self._check_for_trimmed_file(
+                times, time_delta_centimilliseconds
+            )
+
+            if new_time_delta != 0:
+                time_delta_centimilliseconds = new_time_delta
 
             self._raw_ref_reading = np.array(
                 (times + time_delta_centimilliseconds, ref_data[:len_time]),
@@ -486,6 +472,23 @@ class WellFile(
             )
 
         return self._raw_ref_reading
+
+    def _check_for_trimmed_file(
+        self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int
+    ) -> int:
+        file = self.get_h5_file()
+        metadata_keys = set(file.attrs.keys())
+        if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
+            is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+            if not is_untrimmed:
+                time_trimmed = self.get_h5_attribute(
+                    str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
+                )
+                new_times = times + time_delta_centimilliseconds
+                start_index = _find_start_index(time_trimmed, new_times)
+                time_delta_centimilliseconds = new_times[start_index]
+                return time_delta_centimilliseconds
+        return 0
 
 
 def _find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:

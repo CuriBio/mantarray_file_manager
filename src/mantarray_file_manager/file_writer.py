@@ -37,8 +37,6 @@ from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
-np.set_printoptions(edgeitems=10)
-
 
 class MantarrayH5FileCreator(
     h5py.File
@@ -219,7 +217,7 @@ def h5_file_trimmer(
 
         old_file_basename = old_file_basename.split("__trimmed")[0]
 
-    # transfer data
+    # finding amount to trim
     old_raw_reference_data = old_file.get_raw_reference_reading()
     old_tissue_data = old_file.get_raw_tissue_reading()
 
@@ -283,7 +281,7 @@ def h5_file_trimmer(
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
-    # adding new data
+    # adding new trimmed data
     new_tissue_sensor_data = old_h5_file["tissue_sensor_readings"]
     new_tissue_sensor_data = np.array(new_tissue_sensor_data)
     new_tissue_sensor_data = new_tissue_sensor_data[
@@ -306,20 +304,18 @@ def h5_file_trimmer(
 def _find_start_index(from_start: int, old_data: NDArray[(Any, Any), int]) -> int:
     start_index = 0
     time_elapsed = 0
-    if from_start > time_elapsed:
-        while start_index + 1 < len(old_data[0]) and from_start >= time_elapsed:
-            time_elapsed += old_data[0][start_index + 1] - old_data[0][start_index]
-            start_index = start_index + 1
-        start_index = start_index - 1
+    while start_index + 1 < len(old_data[0]) and from_start >= time_elapsed:
+        time_elapsed += old_data[0][start_index + 1] - old_data[0][start_index]
+        start_index += 1
+    start_index -= 1
     return start_index
 
 
 def _find_last_index(from_end: int, old_data: NDArray[(2, Any), int]) -> int:
     last_index = len(old_data[0]) - 1
     time_elapsed = 0
-    if from_end > time_elapsed:
-        while last_index > 0 and from_end >= time_elapsed:
-            time_elapsed += old_data[0][last_index] - old_data[0][last_index - 1]
-            last_index -= 1
-        last_index += 1
+    while last_index > 0 and from_end >= time_elapsed:
+        time_elapsed += old_data[0][last_index] - old_data[0][last_index - 1]
+        last_index -= 1
+    last_index += 1
     return last_index
