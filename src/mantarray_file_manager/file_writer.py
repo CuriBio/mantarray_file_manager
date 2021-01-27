@@ -247,17 +247,17 @@ def h5_file_trimmer(
     ):
         raise TooTrimmedError(from_start, from_end)
 
-    if actual_start_trimmed != from_start:
+    # if actual_start_trimmed != from_start:
 
-        print(  # allow-print
-            f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
-        )
+    #     print(  # allow-print
+    #         f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
+    #     )
 
-    if actual_end_trimmed != from_end:
+    # if actual_end_trimmed != from_end:
 
-        print(  # allow-print
-            f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
-        )
+    #     print(  # allow-print
+    #         f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
+    #     )
 
     # create new file
     new_file_name = os.path.join(
