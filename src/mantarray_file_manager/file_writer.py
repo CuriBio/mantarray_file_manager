@@ -174,6 +174,8 @@ def h5_file_trimmer(
 ) -> str:
     """Trims an H5 file.
 
+    To use from the command line: `python -c "from mantarray_file_manager import h5_file_trimmer; h5_file_trimmer('tests/h5/v0.4.2/MA190190000__2021_01_19_011931__C3__v0.4.2.h5')"`
+
     Args:
         file_path: path to the H5 file
         from_start: centimilliseconds to trim from the start
@@ -247,17 +249,17 @@ def h5_file_trimmer(
     ):
         raise TooTrimmedError(from_start, from_end)
 
-    # if actual_start_trimmed != from_start:
+    if actual_start_trimmed != from_start:
 
-    #     print(  # allow-print
-    #         f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
-    #     )
+        print(  # allow-print
+            f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
+        )
 
-    # if actual_end_trimmed != from_end:
+    if actual_end_trimmed != from_end:
 
-    #     print(  # allow-print
-    #         f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
-    #     )
+        print(  # allow-print
+            f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
+        )
 
     # create new file
     new_file_name = os.path.join(
