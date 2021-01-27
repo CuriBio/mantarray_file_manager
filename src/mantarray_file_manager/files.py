@@ -494,11 +494,10 @@ class WellFile(
 def _find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
     start_index = 0
     time_elapsed = 0
-    if from_start > time_elapsed:
-        while start_index + 1 < len(old_data) and from_start >= time_elapsed:
-            time_elapsed += old_data[start_index + 1] - old_data[start_index]
-            start_index = start_index + 1
-        start_index = start_index - 1
+    while start_index + 1 < len(old_data) and from_start >= time_elapsed:
+        time_elapsed += old_data[start_index + 1] - old_data[start_index]
+        start_index = start_index + 1
+    start_index = start_index - 1
     return start_index
 
 

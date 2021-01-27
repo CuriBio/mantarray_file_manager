@@ -33,6 +33,7 @@ from .exceptions import TooTrimmedError
 from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
 from .exceptions import UnsupportedMantarrayFileVersionForTrimmingError
+from .files import _find_start_index
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
 from .files import WellFile
@@ -223,7 +224,7 @@ def h5_file_trimmer(
 
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
-    tissue_data_start_index = _find_start_index(from_start, old_tissue_data)
+    tissue_data_start_index = _find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
     actual_start_trimmed = (
@@ -234,7 +235,7 @@ def h5_file_trimmer(
     )
 
     reference_data_start_index = _find_start_index(
-        actual_start_trimmed, old_raw_reference_data
+        actual_start_trimmed, old_raw_reference_data[0]
     )
     reference_data_last_index = _find_last_index(
         actual_end_trimmed, old_raw_reference_data
@@ -299,16 +300,6 @@ def h5_file_trimmer(
 
     new_file.close()
     return new_file_name
-
-
-def _find_start_index(from_start: int, old_data: NDArray[(Any, Any), int]) -> int:
-    start_index = 0
-    time_elapsed = 0
-    while start_index + 1 < len(old_data[0]) and from_start >= time_elapsed:
-        time_elapsed += old_data[0][start_index + 1] - old_data[0][start_index]
-        start_index += 1
-    start_index -= 1
-    return start_index
 
 
 def _find_last_index(from_end: int, old_data: NDArray[(2, Any), int]) -> int:
