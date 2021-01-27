@@ -22,6 +22,7 @@ import pytest
 from stdlib_utils import get_current_file_abs_directory
 
 from .fixtures import PATH_TO_GENERIC_0_4_2_FILE
+from .fixtures import TRIMMED_FILE_PATH
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -153,9 +154,8 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points_
 
 
 def test_h5_file_trimmer__When_invoked_on_a_trimmed_file__Then_the_new_file_is_additionally_trimmed_with_the_raw_reference_tissue_data_and_metadata_updated():
-    new_file_path = h5_file_trimmer(
-        "MA190190000__2021_01_19_011931__C3__v0.4.2__trimmed_320_320.h5", 200, 200
-    )
+
+    new_file_path = h5_file_trimmer(TRIMMED_FILE_PATH, 200, 200)
 
     wf = WellFile(new_file_path)
 
