@@ -25,12 +25,6 @@ from .fixtures import PATH_TO_GENERIC_0_4_2_FILE
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
-EXPECTED_PATH_D6 = os.path.join(
-    PATH_OF_CURRENT_FILE,
-    "2020_08_04_build_775",
-    "MA20001010__2020_08_04_220041__D6.h5",
-)
-
 
 def test_MantarrayH5FileCreator__sets_file_name_and_userblock_size_and_file_version():
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -69,6 +63,11 @@ def test_h5_file_trimmer__When_both_args_are_None__Then_raises_an_error():
 
 
 def test_h5_file_trimmer__When_both_file_path_isnt_supported__Then_raises_an_error():
+    EXPECTED_PATH_D6 = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "2020_08_04_build_775",
+        "MA20001010__2020_08_04_220041__D6.h5",
+    )
     with pytest.raises(UnsupportedMantarrayFileVersionForTrimmingError):
         h5_file_trimmer(EXPECTED_PATH_D6, from_start=10, from_end=10)
 

@@ -181,7 +181,7 @@ def h5_file_trimmer(
         from_end: centimilliseconds to trim from the end
 
     Returns:
-        The path to the trimmed H5 file.
+        The path to the trimmed H5 file. The amount actually trimmed off the file is dependent on the timepoints of the tissue sensor data and will be reflected in the new file name, message to the terminal, and the metadata. If the amount to be trimmed off is in between two time points, less time will be trimmed off and the lower timepoint will be used if from_start or upper timepoint if from_last. Reference sensor readings are trimmed according to the amount trimmed from tissue data.
     """
     # pylint: disable-msg=too-many-locals
     validate_int(
@@ -236,7 +236,7 @@ def h5_file_trimmer(
     )
 
     reference_data_start_index = _find_start_index(
-        actual_end_trimmed, old_raw_reference_data
+        actual_start_trimmed, old_raw_reference_data
     )
     reference_data_last_index = _find_last_index(
         actual_end_trimmed, old_raw_reference_data
