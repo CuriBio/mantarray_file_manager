@@ -67,15 +67,13 @@ class UnsupportedArgumentError(Exception):
 
 
 class TooTrimmedError(Exception):
-    """Error raised if the amount of centimilliseconds to be trimmed from the start and end exceeds the length of the recording."""
-
-    def __init__(self, from_start: int, from_end: int) -> None:
+    def __init__(self, from_start: int, from_end: int, total_time: int) -> None:
         super().__init__(
-            f"When trimming {from_start} centimilliseconds from the start and {from_end} centimilliseconds from the end, the length of the recording is exceeded."
+            f"When trimming {from_start} centimilliseconds from the start and {from_end} centimilliseconds from the end, the length of the recording is exceeded. The length of the recording is {total_time} centimilliseconds"
         )
 
 
-class UnsupportedMantarrayFileVersionForTrimmingError(Exception):
+class MantarrayFileNotLatestVersionError(Exception):
     def __init__(self, file_version: str):
         super().__init__(
             f"Mantarray files of version {file_version} are not supported. Please migrate to the latest file version {CURRENT_HDF5_FILE_FORMAT_VERSION}"

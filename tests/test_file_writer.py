@@ -8,10 +8,10 @@ from immutable_data_validation.errors import ValidationCollectionNotAnIntegerErr
 from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
+from mantarray_file_manager import MantarrayFileNotLatestVersionError
 from mantarray_file_manager import MantarrayH5FileCreator
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
-from mantarray_file_manager import UnsupportedMantarrayFileVersionForTrimmingError
 from mantarray_file_manager import WELL_INDEX_UUID
 from mantarray_file_manager import WELL_NAME_UUID
 from mantarray_file_manager import WellFile
@@ -69,7 +69,7 @@ def test_h5_file_trimmer__When_both_file_path_isnt_supported__Then_raises_an_err
         "2020_08_04_build_775",
         "MA20001010__2020_08_04_220041__D6.h5",
     )
-    with pytest.raises(UnsupportedMantarrayFileVersionForTrimmingError):
+    with pytest.raises(MantarrayFileNotLatestVersionError):
         h5_file_trimmer(EXPECTED_PATH_D6, from_start=10, from_end=10)
 
 

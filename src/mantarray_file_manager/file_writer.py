@@ -29,10 +29,10 @@ from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
+from .exceptions import MantarrayFileNotLatestVersionError
 from .exceptions import TooTrimmedError
 from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
-from .exceptions import UnsupportedMantarrayFileVersionForTrimmingError
 from .files import _find_start_index
 from .files import BasicWellFile
 from .files import WELL_FILE_CLASSES
@@ -198,27 +198,11 @@ def h5_file_trimmer(
     old_file_version = _get_format_version_of_file(file_path)
 
     if old_file_version != CURRENT_HDF5_FILE_FORMAT_VERSION:
-        raise UnsupportedMantarrayFileVersionForTrimmingError(old_file_version)
+        raise MantarrayFileNotLatestVersionError(old_file_version)
 
     working_directory = getcwd()
     old_file = WellFile(file_path)
     old_file_basename = ntpath.basename(file_path)[:-3]
-
-    # old metadata
-    old_h5_file = old_file.get_h5_file()
-    old_metadata_keys = set(old_h5_file.attrs.keys())
-    old_from_end = 0
-    old_from_start = 0
-
-    if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in old_metadata_keys:
-        old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
-        old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
-
-        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
-        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
-        old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
-
-        old_file_basename = old_file_basename.split("__trimmed")[0]
 
     # finding amount to trim
     old_raw_reference_data = old_file.get_raw_reference_reading()
@@ -226,6 +210,7 @@ def h5_file_trimmer(
 
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
+    total_time = tissue_data_last_val - tissue_data_start_val
     tissue_data_start_index = _find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
@@ -247,7 +232,24 @@ def h5_file_trimmer(
         reference_data_start_index >= reference_data_last_index
         or tissue_data_start_index >= tissue_data_last_index
     ):
-        raise TooTrimmedError(from_start, from_end)
+        raise TooTrimmedError(from_start, from_end, total_time)
+
+    # old metadata
+    old_h5_file = old_file.get_h5_file()
+    old_metadata_keys = set(old_h5_file.attrs.keys())
+    old_from_end = 0
+    old_from_start = 0
+    is_untrimmed = old_h5_file.attrs[str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)]
+
+    if not is_untrimmed:
+        old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
+        old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
+
+        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
+        old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
+        old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+
+        old_file_basename = old_file_basename.split("__trimmed")[0]
 
     if actual_start_trimmed != from_start:
 
