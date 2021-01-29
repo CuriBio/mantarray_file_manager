@@ -124,7 +124,7 @@ def test_h5_file_trimmer__When_invoked_on_a_file_with_too_much_time_trimmed__The
         h5_file_trimmer(current_version_file_path, from_start=6000000, from_end=2000000)
 
 
-def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_in_before_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data(
+def test_h5_file_trimmer__When_invoked_on_a_current_file_with_args_in_before_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data(
     current_version_file_path,
 ):
     new_file_path = h5_file_trimmer(current_version_file_path, 70, 70)
@@ -150,7 +150,7 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_in_before_time_
     wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
 
 
-def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data(
+def test_h5_file_trimmer__When_invoked_on_a_current_file_with_args_on_time_points__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data(
     current_version_file_path,
 ):
     new_file_path = h5_file_trimmer(current_version_file_path, 320, 320)
@@ -171,6 +171,32 @@ def test_h5_file_trimmer__When_invoked_on_a_0_4_1_file_with_args_on_time_points_
     assert reference_data[0][0] == 340
     assert reference_data[0][-1] == 1182660
     assert reference_data[1][0] == -2654995
+    assert reference_data[1][-1] == -4123001
+
+    wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
+
+
+def test_h5_file_trimmer__When_invoked_on_a_current_file_with_only_end_arg__Then_the_new_file_has_trimmed_raw_referene_and_tissue_data(
+    current_version_file_path,
+):
+    new_file_path = h5_file_trimmer(current_version_file_path, from_end=320)
+
+    wf = WellFile(new_file_path)
+
+    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)) == 0
+    assert wf.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)) == 320
+
+    # raw data
+    tissue_data = wf.get_raw_tissue_reading()
+    assert tissue_data[0][0] == 120
+    assert tissue_data[0][-1] == 135640
+    assert tissue_data[1][0] == -974940
+    assert tissue_data[1][-1] == 1713713
+
+    reference_data = wf.get_raw_reference_reading()
+    assert reference_data[0][0] == 20
+    assert reference_data[0][-1] == 1182660
+    assert reference_data[1][0] == -2722104
     assert reference_data[1][-1] == -4123001
 
     wf.get_h5_file().close()  # safe clean-up when running CI on windows systems
