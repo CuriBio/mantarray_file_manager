@@ -63,7 +63,7 @@ class UnsupportedArgumentError(Exception):
     """Error raised if the arguments indicating the amount of centimilliseconds to be trimmed from the start and end are both None."""
 
     def __init__(self) -> None:
-        super().__init__("Both arguments cannot be None.")
+        super().__init__("Both arguments cannot be None or 0.")
 
 
 class TooTrimmedError(Exception):

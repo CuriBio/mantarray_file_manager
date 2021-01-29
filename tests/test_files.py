@@ -29,12 +29,13 @@ from stdlib_utils import get_current_file_abs_directory
 from .fixtures import fixture_generic_well_file
 from .fixtures import fixture_generic_well_file_0_3_1
 from .fixtures import fixture_generic_well_file_0_3_1__2
-from .fixtures import TRIMMED_FILE_PATH
+from .fixtures import fixture_trimmed_file_path
 
 __fixtures__ = (
     fixture_generic_well_file,
     fixture_generic_well_file_0_3_1,
     fixture_generic_well_file_0_3_1__2,
+    fixture_trimmed_file_path,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -192,8 +193,10 @@ def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
     assert arr[1, 150] == 817496
 
 
-def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0_when_trimmed():
-    wf = WellFile(TRIMMED_FILE_PATH)
+def test_WellFile__get_raw_tissue_reading__has_correct_time_offset_at_index_0_when_trimmed(
+    trimmed_file_path,
+):
+    wf = WellFile(trimmed_file_path)
     arr = wf.get_raw_tissue_reading()
     assert arr.shape == (2, 846)
     assert arr.dtype == np.int32
@@ -223,8 +226,10 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
     assert arr[1, 150] == 255013
 
 
-def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0_when_trimmed():
-    wf = WellFile(TRIMMED_FILE_PATH)
+def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0_when_trimmed(
+    trimmed_file_path,
+):
+    wf = WellFile(trimmed_file_path)
     arr = wf.get_raw_reference_reading()
     assert arr.shape == (2, 29559)
     assert arr.dtype == np.int32

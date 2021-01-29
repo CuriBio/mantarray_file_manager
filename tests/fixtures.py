@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
 
+from mantarray_file_manager import migrate_to_latest_version
 from mantarray_file_manager import WellFile
+from mantarray_file_manager.file_writer import h5_file_trimmer
 import pytest
 from stdlib_utils import get_current_file_abs_directory
 
@@ -21,19 +23,30 @@ PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
     "MA190190000__2021_01_19_011931__C3.h5",
 )
 
-PATH_TO_GENERIC_0_4_2_FILE = os.path.join(
-    PATH_OF_CURRENT_FILE,
-    "h5",
-    "v0.4.2",
-    "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
-)
 
-TRIMMED_FILE_PATH = os.path.join(
-    PATH_OF_CURRENT_FILE,
-    "h5",
-    "v0.4.2",
-    "MA190190000__2021_01_19_011931__C3__v0.4.2__trimmed_320_320.h5",
-)
+@pytest.fixture(scope="module", name="current_version_file_path")
+def fixture_current_version_file_path():
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        "v0.4.2",
+        "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+    )
+    new_file_path = migrate_to_latest_version(file_path)
+    yield new_file_path
+
+
+@pytest.fixture(scope="module", name="trimmed_file_path")
+def fixture_trimmed_file_path():
+    file_path = os.path.join(
+        PATH_OF_CURRENT_FILE,
+        "h5",
+        "v0.4.2",
+        "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+    )
+    new_file_path = migrate_to_latest_version(file_path)
+    trimmed_file_path = h5_file_trimmer(new_file_path, 320, 320)
+    yield trimmed_file_path
 
 
 @pytest.fixture(scope="function", name="generic_well_file")

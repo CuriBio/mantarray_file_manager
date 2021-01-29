@@ -169,8 +169,8 @@ def migrate_to_latest_version(
 
 def h5_file_trimmer(
     file_path: str,
-    from_start: int,
-    from_end: int,
+    from_start: int = 0,
+    from_end: int = 0,
 ) -> str:
     """Trims an H5 file.
 
@@ -184,7 +184,7 @@ def h5_file_trimmer(
     Returns:
         The path to the trimmed H5 file. The amount actually trimmed off the file is dependent on the timepoints of the tissue sensor data and will be reflected in the new file name, message to the terminal, and the metadata. If the amount to be trimmed off is in between two time points, less time will be trimmed off and the lower timepoint will be used if from_start or upper timepoint if from_last. Reference sensor readings are trimmed according to the amount trimmed from tissue data.
     """
-    # pylint: disable-msg=too-many-locals
+    # pylint: disable-msg=too-many-locals # Anna (1/27/20) many local variables are needed throughout the method
     validate_int(
         value=from_start,
         allow_null=True,
@@ -193,6 +193,9 @@ def h5_file_trimmer(
     validate_int(value=from_end, allow_null=True, minimum=0)
 
     if not from_start and not from_end:
+        raise UnsupportedArgumentError()
+
+    if from_start == 0 and from_end == 0:
         raise UnsupportedArgumentError()
 
     old_file_version = _get_format_version_of_file(file_path)
