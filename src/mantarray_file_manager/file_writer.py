@@ -192,10 +192,10 @@ def h5_file_trimmer(
     )
     validate_int(value=from_end, allow_null=True, minimum=0)
 
-    if not from_start and not from_end:
+    if from_start == 0 and from_end == 0:
         raise UnsupportedArgumentError()
 
-    if from_start == 0 and from_end == 0:
+    if not from_start and not from_end:
         raise UnsupportedArgumentError()
 
     old_file_version = _get_format_version_of_file(file_path)
