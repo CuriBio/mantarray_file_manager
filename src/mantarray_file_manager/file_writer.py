@@ -305,6 +305,7 @@ def h5_file_trimmer(
     new_file.create_dataset("tissue_sensor_readings", data=new_tissue_sensor_data)
     new_file.create_dataset("reference_sensor_readings", data=new_reference_sensor_data)
 
+    old_h5_file.close()
     new_file.close()
     return new_file_name
 
