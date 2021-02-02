@@ -204,9 +204,17 @@ def test_h5_file_trimmer__When_invoked_on_a_current_file_with_only_end_arg__Then
 
 def test_h5_file_trimmer__When_invoked_on_a_trimmed_file__Then_the_new_file_is_additionally_trimmed_with_the_raw_reference_tissue_data_and_metadata_updated(
     trimmed_file_path,
+    mocker,
 ):
+    mocked_print = mocker.patch("builtins.print", autospec=True)
+
+    mocked_start_str = "160 centimilliseconds was trimmed from the start instead of 200"
+    mocked_end_str = "160 centimilliseconds was trimmed from the end instead of 200"
 
     new_file_path = h5_file_trimmer(trimmed_file_path, 200, 200)
+
+    assert mocked_print.call_args_list[0][0][0] == mocked_start_str
+    assert mocked_print.call_args_list[1][0][0] == mocked_end_str
 
     wf = WellFile(new_file_path)
 

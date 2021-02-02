@@ -169,8 +169,8 @@ def migrate_to_latest_version(
 
 def h5_file_trimmer(
     file_path: str,
-    from_start: int = 0,
-    from_end: int = 0,
+    from_start: Optional[int] = 0,
+    from_end: Optional[int] = 0,
 ) -> str:
     """Trims an H5 file.
 
@@ -195,7 +195,7 @@ def h5_file_trimmer(
     if from_start == 0 and from_end == 0:
         raise UnsupportedArgumentError()
 
-    if not from_start and not from_end:
+    if from_end is None or from_start is None:
         raise UnsupportedArgumentError()
 
     old_file_version = _get_format_version_of_file(file_path)
