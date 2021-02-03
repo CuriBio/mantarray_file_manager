@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import tempfile
 
 from mantarray_file_manager import migrate_to_latest_version
 from mantarray_file_manager import WellFile
@@ -26,13 +27,14 @@ PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
 
 @pytest.fixture(scope="module", name="current_version_file_path")
 def fixture_current_version_file_path():
-    file_path = os.path.join(
-        PATH_OF_CURRENT_FILE,
-        "h5",
-        "v0.4.2",
-        "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
-    )
-    new_file_path = migrate_to_latest_version(file_path)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+        )
+        new_file_path = migrate_to_latest_version(file_path, tmp_dir)
     yield new_file_path
 
 
