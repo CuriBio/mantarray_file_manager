@@ -35,20 +35,21 @@ def fixture_current_version_file_path():
             "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
         )
         new_file_path = migrate_to_latest_version(file_path, tmp_dir)
-    yield new_file_path
+        yield new_file_path
 
 
 @pytest.fixture(scope="module", name="trimmed_file_path")
 def fixture_trimmed_file_path():
-    file_path = os.path.join(
-        PATH_OF_CURRENT_FILE,
-        "h5",
-        "v0.4.2",
-        "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
-    )
-    new_file_path = migrate_to_latest_version(file_path)
-    trimmed_file_path = h5_file_trimmer(new_file_path, 320, 320)
-    yield trimmed_file_path
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+        )
+        new_file_path = migrate_to_latest_version(file_path, tmp_dir)
+        trimmed_file_path = h5_file_trimmer(new_file_path, 320, 320)
+        yield trimmed_file_path
 
 
 @pytest.fixture(scope="function", name="generic_well_file")
