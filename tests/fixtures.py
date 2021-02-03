@@ -48,7 +48,7 @@ def fixture_trimmed_file_path():
             "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
         )
         new_file_path = migrate_to_latest_version(file_path, tmp_dir)
-        trimmed_file_path = h5_file_trimmer(new_file_path, 320, 320)
+        trimmed_file_path = h5_file_trimmer(new_file_path, tmp_dir, 320, 320)
         yield trimmed_file_path
 
 

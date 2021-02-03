@@ -169,6 +169,7 @@ def migrate_to_latest_version(
 
 def h5_file_trimmer(
     file_path: str,
+    working_directory: Optional[str] = None,
     from_start: Optional[int] = 0,
     from_end: Optional[int] = 0,
 ) -> str:
@@ -203,7 +204,9 @@ def h5_file_trimmer(
     if old_file_version != CURRENT_HDF5_FILE_FORMAT_VERSION:
         raise MantarrayFileNotLatestVersionError(old_file_version)
 
-    working_directory = getcwd()
+    if working_directory is None:
+        working_directory = getcwd()
+
     old_file = WellFile(file_path)
     old_file_basename = ntpath.basename(file_path)[:-3]
 
