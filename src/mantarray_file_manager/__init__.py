@@ -52,6 +52,7 @@ from .constants import WELL_NAME_UUID
 from .constants import WELL_ROW_UUID
 from .constants import XEM_SERIAL_NUMBER_UUID
 from .exceptions import FileAttributeNotFoundError
+from .exceptions import MantarrayFileNotLatestVersionError
 from .exceptions import UnsupportedFileMigrationPath
 from .exceptions import UnsupportedMantarrayFileVersionError
 from .exceptions import WellRecordingsNotFromSameSessionError
@@ -130,4 +131,5 @@ __all__ = [
     "UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID",
     "FILE_VERSION_PRIOR_TO_MIGRATION_UUID",
     "NOT_APPLICABLE_H5_METADATA",
+    "MantarrayFileNotLatestVersionError",
 ]
