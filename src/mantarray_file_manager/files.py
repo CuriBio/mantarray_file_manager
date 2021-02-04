@@ -474,6 +474,9 @@ class WellFile(
     ) -> int:
         try:
             is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
+        except FileAttributeNotFoundError:
+            pass
+        else:
             if not is_untrimmed:
                 time_trimmed = self.get_h5_attribute(
                     str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
@@ -482,8 +485,6 @@ class WellFile(
                 start_index = find_start_index(time_trimmed, new_times)
                 new_time_delta = int(new_times[start_index])
                 return new_time_delta
-        except FileAttributeNotFoundError:
-            pass
         return time_delta_centimilliseconds
 
 
