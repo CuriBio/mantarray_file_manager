@@ -31,12 +31,14 @@ from .constants import NOT_APPLICABLE_H5_METADATA
 from .constants import ORIGINAL_FILE_VERSION_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
+from .constants import REFERENCE_SENSOR_READINGS
 from .constants import REFERENCE_VOLTAGE_UUID
 from .constants import SLEEP_FIRMWARE_VERSION_UUID
 from .constants import SOFTWARE_BUILD_NUMBER_UUID
 from .constants import SOFTWARE_RELEASE_VERSION_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
+from .constants import TISSUE_SENSOR_READINGS
 from .constants import TOTAL_WELL_COUNT_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
@@ -132,4 +134,6 @@ __all__ = [
     "FILE_VERSION_PRIOR_TO_MIGRATION_UUID",
     "NOT_APPLICABLE_H5_METADATA",
     "MantarrayFileNotLatestVersionError",
+    "TISSUE_SENSOR_READINGS",
+    "REFERENCE_SENSOR_READINGS",
 ]

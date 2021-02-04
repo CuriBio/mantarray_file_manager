@@ -25,7 +25,7 @@ PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
 )
 
 
-@pytest.fixture(scope="function", name="current_version_file_path")
+@pytest.fixture(scope="module", name="current_version_file_path")
 def fixture_current_version_file_path():
     with tempfile.TemporaryDirectory() as tmp_dir:
         file_path = os.path.join(
@@ -38,7 +38,7 @@ def fixture_current_version_file_path():
         yield new_file_path
 
 
-@pytest.fixture(scope="function", name="trimmed_file_path")
+@pytest.fixture(scope="module", name="trimmed_file_path")
 def fixture_trimmed_file_path():
     with tempfile.TemporaryDirectory() as tmp_dir:
         file_path = os.path.join(

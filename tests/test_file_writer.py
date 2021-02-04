@@ -80,7 +80,7 @@ def test_h5_file_trimmer__When_both_args_are_None__Then_raises_an_error(
         h5_file_trimmer(current_version_file_path, from_start=None, from_end=None)
 
 
-def test_h5_file_trimmer__When_both_file_path_isnt_supported__Then_raises_an_error():
+def test_h5_file_trimmer__When_file_path_isnt_supported__Then_raises_an_error():
     EXPECTED_PATH_D6 = os.path.join(
         PATH_OF_CURRENT_FILE,
         "2020_08_04_build_775",
@@ -215,14 +215,13 @@ def test_h5_file_trimmer__When_invoked_on_a_trimmed_file__Then_the_new_file_is_a
 
     mocked_print = mocker.patch("builtins.print", autospec=True)
 
-    mocked_start_str = "160 centimilliseconds was trimmed from the start instead of 200"
-    mocked_end_str = "160 centimilliseconds was trimmed from the end instead of 200"
+    mocked_trimmed_str = "160 centimilliseconds"
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         new_file_path = h5_file_trimmer(trimmed_file_path, tmp_dir, 200, 200)
 
-        assert mocked_print.call_args_list[0][0][0] == mocked_start_str
-        assert mocked_print.call_args_list[1][0][0] == mocked_end_str
+        assert mocked_trimmed_str in mocked_print.call_args_list[0][0][0]
+        assert mocked_trimmed_str in mocked_print.call_args_list[1][0][0]
 
         wf = WellFile(new_file_path)
 
