@@ -485,13 +485,13 @@ class WellFile(
                     str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
                 )
                 new_times = times + time_delta_centimilliseconds
-                start_index = _find_start_index(time_trimmed, new_times)
+                start_index = find_start_index(time_trimmed, new_times)
                 time_delta_centimilliseconds = new_times[start_index]
                 return time_delta_centimilliseconds
         return 0
 
 
-def _find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
+def find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
     start_index = 0
     time_elapsed = 0
     while start_index + 1 < len(old_data) and from_start >= time_elapsed:

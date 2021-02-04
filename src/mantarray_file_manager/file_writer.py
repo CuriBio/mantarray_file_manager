@@ -33,8 +33,8 @@ from .exceptions import MantarrayFileNotLatestVersionError
 from .exceptions import TooTrimmedError
 from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
-from .files import _find_start_index
 from .files import BasicWellFile
+from .files import find_start_index
 from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
@@ -217,7 +217,7 @@ def h5_file_trimmer(
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
     total_time = tissue_data_last_val - tissue_data_start_val
-    tissue_data_start_index = _find_start_index(from_start, old_tissue_data[0])
+    tissue_data_start_index = find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
     actual_start_trimmed = (
@@ -227,7 +227,7 @@ def h5_file_trimmer(
         tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
     )
 
-    reference_data_start_index = _find_start_index(
+    reference_data_start_index = find_start_index(
         actual_start_trimmed, old_raw_reference_data[0]
     )
     reference_data_last_index = _find_last_index(
