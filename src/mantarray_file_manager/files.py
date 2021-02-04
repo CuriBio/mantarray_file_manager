@@ -470,7 +470,7 @@ class WellFile(
         return self._raw_ref_reading
 
     def _check_for_trimmed_file(
-        self, times: NDArray[int], time_delta_centimilliseconds: int
+        self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int
     ) -> int:
         try:
             is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
