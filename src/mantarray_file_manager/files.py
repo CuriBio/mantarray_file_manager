@@ -475,17 +475,15 @@ class WellFile(
         try:
             is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
         except FileAttributeNotFoundError:
-            pass
-        else:
-            if not is_untrimmed:
-                time_trimmed = self.get_h5_attribute(
-                    str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
-                )
-                new_times = times + time_delta_centimilliseconds
-                start_index = find_start_index(time_trimmed, new_times)
-                new_time_delta = int(new_times[start_index])
-                return new_time_delta
-        return time_delta_centimilliseconds
+            # Eli (2/5/21): If that attribute is missing, then it's an old version of the file from before that metadata was added. So therefore it must be an original file that was never trimmed.
+            return time_delta_centimilliseconds
+        if is_untrimmed:
+            return time_delta_centimilliseconds
+        time_trimmed = self.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
+        new_times = times + time_delta_centimilliseconds
+        start_index = find_start_index(time_trimmed, new_times)
+        new_time_delta = int(new_times[start_index])
+        return new_time_delta
 
 
 def find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:

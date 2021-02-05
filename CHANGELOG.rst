@@ -1,7 +1,7 @@
 Changelog for Mantarray File Manager
 ====================================
 
-0.4.6 (unreleased)
+0.4.6 (2021-02-05)
 ------------------
 
 - Added file migration function to go from v0.3.1 to v0.4.1 and v0.4.1 to v0.4.2
