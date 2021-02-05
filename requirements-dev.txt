@@ -8,14 +8,15 @@
 # install the current package in editable mode
 # pip install -e .
 
-pre-commit==2.9.3 # run 'pre-commit install' initially to install the git hooks
-pytest==6.2.1
-pytest-cov==2.10.1
+pre-commit==2.10.0 # run 'pre-commit install' initially to install the git hooks
+pytest==6.2.2
+pytest-cov==2.11.1
 pytest-randomly==3.5.0
 pylint==2.6.0
 pytest-pylint==0.18.0
 zest.releaser[recommended]==6.22.1
 
-#pytest-mock==3.1.1
+pytest-mock==3.5.1
 #pytest-timeout==1.3.4
-#freezegun==0.3.15
+freezegun==1.1.0
+pytest-xdist==2.2.0

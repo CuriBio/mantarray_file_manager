@@ -1,11 +1,55 @@
 # -*- coding: utf-8 -*-
 import os
+import tempfile
 
+from mantarray_file_manager import migrate_to_latest_version
 from mantarray_file_manager import WellFile
+from mantarray_file_manager.file_writer import h5_file_trimmer
 import pytest
 from stdlib_utils import get_current_file_abs_directory
 
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
+
+PATH_TO_GENERIC_0_3_1_FILE = os.path.join(
+    PATH_OF_CURRENT_FILE,
+    "h5",
+    "v0.3.1",
+    "MA20123456__2020_08_17_145752__B3.h5",
+)
+
+PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
+    PATH_OF_CURRENT_FILE,
+    "h5",
+    "v0.4.1",
+    "MA190190000__2021_01_19_011931__C3.h5",
+)
+
+
+@pytest.fixture(scope="module", name="current_version_file_path")
+def fixture_current_version_file_path():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+        )
+        new_file_path = migrate_to_latest_version(file_path, tmp_dir)
+        yield new_file_path
+
+
+@pytest.fixture(scope="module", name="trimmed_file_path")
+def fixture_trimmed_file_path():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        file_path = os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "h5",
+            "v0.4.2",
+            "MA190190000__2021_01_19_011931__C3__v0.4.2.h5",
+        )
+        new_file_path = migrate_to_latest_version(file_path, tmp_dir)
+        trimmed_file_path = h5_file_trimmer(new_file_path, tmp_dir, 320, 320)
+        yield trimmed_file_path
 
 
 @pytest.fixture(scope="function", name="generic_well_file")
@@ -22,14 +66,7 @@ def fixture_generic_well_file():
 
 @pytest.fixture(scope="function", name="generic_well_file_0_3_1")
 def fixture_generic_well_file_0_3_1():
-    wf = WellFile(
-        os.path.join(
-            PATH_OF_CURRENT_FILE,
-            "h5",
-            "v0.3.1",
-            "MA20123456__2020_08_17_145752__B3.h5",
-        )
-    )
+    wf = WellFile(PATH_TO_GENERIC_0_3_1_FILE)
     yield wf
 
 

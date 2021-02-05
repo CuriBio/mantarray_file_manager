@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="mantarray_file_manager",
-    version="0.4.5",
+    version="0.4.6",
     description="Finds and opens Mantarray files.",
     url="https://github.com/CuriBio/mantarray-file-manager",
     author="Curi Bio",
@@ -20,8 +20,8 @@ setup(
         "numpy>=1.19.1",
         "stdlib-utils>=0.2.1",
         "semver>=2.10.2",
-        "immutable_data_validation==0.2.1",
-        'importlib-metadata ~= 1.0 ; python_version < "3.8"',
+        "immutable_data_validation>=0.2.1",
+        "immutabledict>=1.1.0",
     ],
     zip_safe=False,
     include_package_data=True,
@@ -33,6 +33,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering",
     ],
 )

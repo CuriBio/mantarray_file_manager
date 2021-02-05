@@ -5,6 +5,8 @@ from uuid import UUID
 
 from immutable_data_validation import is_uuid
 
+from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import FILE_MIGRATION_PATHS
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MIN_SUPPORTED_FILE_VERSION
 
@@ -45,4 +47,34 @@ class FileAttributeNotFoundError(Exception):
             attr_description = f"{attr_name} (Unrecognized UUID)"
         super().__init__(
             f"The metadata attribute '{attr_description}' was not found in this file. File format version {file_version}, filepath: {file_path}"
+        )
+
+
+class UnsupportedFileMigrationPath(Exception):
+    """Error raised if a file is attempted to be migrated from a version that has no migration script."""
+
+    def __init__(self, file_version: str):
+        super().__init__(
+            f"There is no supported migration path from version {file_version}. Supported paths are: {FILE_MIGRATION_PATHS}."
+        )
+
+
+class UnsupportedArgumentError(Exception):
+    """Error raised if the arguments indicating the amount of centimilliseconds to be trimmed from the start and end are both None."""
+
+    def __init__(self) -> None:
+        super().__init__("Both arguments cannot be None or 0.")
+
+
+class TooTrimmedError(Exception):
+    def __init__(self, from_start: int, from_end: int, total_time: int) -> None:
+        super().__init__(
+            f"When trimming {from_start} centimilliseconds from the start and {from_end} centimilliseconds from the end, the length of the recording is exceeded. The length of the recording is {total_time} centimilliseconds"
+        )
+
+
+class MantarrayFileNotLatestVersionError(Exception):
+    def __init__(self, file_version: str):
+        super().__init__(
+            f"Mantarray files of version {file_version} are not supported. Please migrate to the latest file version {CURRENT_HDF5_FILE_FORMAT_VERSION}"
         )
