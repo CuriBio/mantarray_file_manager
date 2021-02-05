@@ -476,7 +476,7 @@ class WellFile(
             is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
         except FileAttributeNotFoundError:
             # Eli (2/5/21): If that attribute is missing, then it's an old version of the file from before that metadata was added. So therefore it must be an original file that was never trimmed.
-            return time_delta_centimilliseconds
+            is_untrimmed = True
         if is_untrimmed:
             return time_delta_centimilliseconds
         time_trimmed = self.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
