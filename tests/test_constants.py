@@ -28,12 +28,14 @@ from mantarray_file_manager import NOT_APPLICABLE_H5_METADATA
 from mantarray_file_manager import ORIGINAL_FILE_VERSION_UUID
 from mantarray_file_manager import PLATE_BARCODE_UUID
 from mantarray_file_manager import REF_SAMPLING_PERIOD_UUID
+from mantarray_file_manager import REFERENCE_SENSOR_READINGS
 from mantarray_file_manager import REFERENCE_VOLTAGE_UUID
 from mantarray_file_manager import SLEEP_FIRMWARE_VERSION_UUID
 from mantarray_file_manager import SOFTWARE_BUILD_NUMBER_UUID
 from mantarray_file_manager import SOFTWARE_RELEASE_VERSION_UUID
 from mantarray_file_manager import START_RECORDING_TIME_INDEX_UUID
 from mantarray_file_manager import TISSUE_SAMPLING_PERIOD_UUID
+from mantarray_file_manager import TISSUE_SENSOR_READINGS
 from mantarray_file_manager import TOTAL_WELL_COUNT_UUID
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from mantarray_file_manager import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
@@ -189,3 +191,8 @@ def test_metadata_UUIDs():
 
 def test_file_migration_paths():
     assert FILE_MIGRATION_PATHS == {"0.3.1": "0.4.1", "0.4.1": "0.4.2"}
+
+
+def test_sensor_data_types():
+    assert TISSUE_SENSOR_READINGS == "tissue_sensor_readings"
+    assert REFERENCE_SENSOR_READINGS == "reference_sensor_readings"

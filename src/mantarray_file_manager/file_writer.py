@@ -11,7 +11,7 @@ from typing import Union
 import uuid
 
 import h5py
-from immutable_data_validation.wrapped_vc_validators import validate_int
+from immutable_data_validation import validate_int
 from nptyping import NDArray
 import numpy as np
 
@@ -26,6 +26,8 @@ from .constants import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from .constants import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from .constants import NOT_APPLICABLE_H5_METADATA
 from .constants import ORIGINAL_FILE_VERSION_UUID
+from .constants import REFERENCE_SENSOR_READINGS
+from .constants import TISSUE_SENSOR_READINGS
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID
@@ -33,8 +35,8 @@ from .exceptions import MantarrayFileNotLatestVersionError
 from .exceptions import TooTrimmedError
 from .exceptions import UnsupportedArgumentError
 from .exceptions import UnsupportedFileMigrationPath
-from .files import _find_start_index
 from .files import BasicWellFile
+from .files import find_start_index
 from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
@@ -179,6 +181,7 @@ def h5_file_trimmer(
 
     Args:
         file_path: path to the H5 file
+        working_directory: the directory in which to create the new files. Defaults to current working directory.
         from_start: centimilliseconds to trim from the start
         from_end: centimilliseconds to trim from the end
 
@@ -217,7 +220,7 @@ def h5_file_trimmer(
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
     total_time = tissue_data_last_val - tissue_data_start_val
-    tissue_data_start_index = _find_start_index(from_start, old_tissue_data[0])
+    tissue_data_start_index = find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
     actual_start_trimmed = (
@@ -227,7 +230,7 @@ def h5_file_trimmer(
         tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
     )
 
-    reference_data_start_index = _find_start_index(
+    reference_data_start_index = find_start_index(
         actual_start_trimmed, old_raw_reference_data[0]
     )
     reference_data_last_index = _find_last_index(
@@ -293,20 +296,20 @@ def h5_file_trimmer(
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
     # adding new trimmed data
-    new_tissue_sensor_data = old_h5_file["tissue_sensor_readings"]
+    new_tissue_sensor_data = old_h5_file[TISSUE_SENSOR_READINGS]
     new_tissue_sensor_data = np.array(new_tissue_sensor_data)
     new_tissue_sensor_data = new_tissue_sensor_data[
         tissue_data_start_index : tissue_data_last_index + 1
     ]  # +1 because needs to be inclusive of last index
 
-    new_reference_sensor_data = old_h5_file["reference_sensor_readings"]
+    new_reference_sensor_data = old_h5_file[REFERENCE_SENSOR_READINGS]
     new_reference_sensor_data = np.array(new_reference_sensor_data)
     new_reference_sensor_data = new_reference_sensor_data[
         reference_data_start_index : reference_data_last_index + 1
     ]  # +1 because needs to be indclusive of last index
 
-    new_file.create_dataset("tissue_sensor_readings", data=new_tissue_sensor_data)
-    new_file.create_dataset("reference_sensor_readings", data=new_reference_sensor_data)
+    new_file.create_dataset(TISSUE_SENSOR_READINGS, data=new_tissue_sensor_data)
+    new_file.create_dataset(REFERENCE_SENSOR_READINGS, data=new_reference_sensor_data)
 
     old_h5_file.close()
     new_file.close()

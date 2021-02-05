@@ -29,8 +29,10 @@ from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
+from .constants import REFERENCE_SENSOR_READINGS
 from .constants import START_RECORDING_TIME_INDEX_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
+from .constants import TISSUE_SENSOR_READINGS
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import USER_ACCOUNT_ID_UUID
 from .constants import UTC_BEGINNING_DATA_ACQUISTION_UUID
@@ -406,17 +408,14 @@ class WellFile(
                 self.get_tissue_sampling_period_microseconds()
                 / MICROSECONDS_PER_CENTIMILLISECOND
             )
-            tissue_data = self._h5_file["tissue_sensor_readings"]
+            tissue_data = self._h5_file[TISSUE_SENSOR_READINGS]
 
             times = np.arange(len(tissue_data), dtype=np.int32) * time_step
             len_time = len(times)
 
-            new_time_delta = self._check_for_trimmed_file(
+            time_delta_centimilliseconds = self._check_for_trimmed_file(
                 times, time_delta_centimilliseconds
             )
-
-            if new_time_delta != 0:
-                time_delta_centimilliseconds = new_time_delta
 
             self._raw_tissue_reading = np.array(
                 (times + time_delta_centimilliseconds, tissue_data[:len_time]),
@@ -454,17 +453,14 @@ class WellFile(
                 / MICROSECONDS_PER_CENTIMILLISECOND
             )
 
-            ref_data = self._h5_file["reference_sensor_readings"]
+            ref_data = self._h5_file[REFERENCE_SENSOR_READINGS]
 
             times = np.arange(len(ref_data), dtype=np.int32) * time_step
             len_time = len(times)
 
-            new_time_delta = self._check_for_trimmed_file(
+            time_delta_centimilliseconds = self._check_for_trimmed_file(
                 times, time_delta_centimilliseconds
             )
-
-            if new_time_delta != 0:
-                time_delta_centimilliseconds = new_time_delta
 
             self._raw_ref_reading = np.array(
                 (times + time_delta_centimilliseconds, ref_data[:len_time]),
@@ -476,22 +472,21 @@ class WellFile(
     def _check_for_trimmed_file(
         self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int
     ) -> int:
-        file = self.get_h5_file()
-        metadata_keys = set(file.attrs.keys())
-        if str(IS_FILE_ORIGINAL_UNTRIMMED_UUID) in metadata_keys:
+        try:
             is_untrimmed = self.get_h5_attribute(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
-            if not is_untrimmed:
-                time_trimmed = self.get_h5_attribute(
-                    str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)
-                )
-                new_times = times + time_delta_centimilliseconds
-                start_index = _find_start_index(time_trimmed, new_times)
-                time_delta_centimilliseconds = new_times[start_index]
-                return time_delta_centimilliseconds
-        return 0
+        except FileAttributeNotFoundError:
+            # Eli (2/5/21): If that attribute is missing, then it's an old version of the file from before that metadata was added. So therefore it must be an original file that was never trimmed.
+            is_untrimmed = True
+        if is_untrimmed:
+            return time_delta_centimilliseconds
+        time_trimmed = self.get_h5_attribute(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
+        new_times = times + time_delta_centimilliseconds
+        start_index = find_start_index(time_trimmed, new_times)
+        new_time_delta = int(new_times[start_index])
+        return new_time_delta
 
 
-def _find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
+def find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
     start_index = 0
     time_elapsed = 0
     while start_index + 1 < len(old_data) and from_start >= time_elapsed:
