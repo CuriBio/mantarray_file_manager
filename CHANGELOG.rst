@@ -1,6 +1,12 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.4.7 (unreleased)
+------------------
+
+- Added confirm no test files are added check
+
+
 0.4.6 (2021-02-05)
 ------------------
 
