@@ -1,7 +1,7 @@
 # pip install -r requirements.txt
 
 h5py==3.2.1
-nptyping==1.4.0
+nptyping==1.4.1
 numpy==1.20.1
 semver==2.13.0
 immutable_data_validation==0.2.1
