@@ -7,7 +7,6 @@ import sys
 from typing import Optional
 from typing import Pattern
 
-from git import Repo
 
 if re != sys:  # need to protect the #nosec comment from being deleted by zimports
     import subprocess  # nosec # B404 security implications are considered
@@ -59,6 +58,10 @@ def pip_install(test_pypi: Optional[bool] = False) -> None:
 
 
 def confirm_version_tag_not_present_on_remote() -> None:
+    from git import (
+        Repo,
+    )  # only import it here so that the simpler functions can be called that don't rely on this extra dependency if they need to be called earlier in the workflow
+
     version = package_version()
     repo = Repo(os.path.join(PATH_OF_CURRENT_FILE, os.pardir, os.pardir))
     tags = repo.git.ls_remote("--tags", "origin")
