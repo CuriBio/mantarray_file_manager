@@ -7,6 +7,8 @@ import sys
 from typing import Optional
 from typing import Pattern
 
+from git import Repo
+
 if re != sys:  # need to protect the #nosec comment from being deleted by zimports
     import subprocess  # nosec # B404 security implications are considered
 
@@ -56,6 +58,21 @@ def pip_install(test_pypi: Optional[bool] = False) -> None:
         sys.exit(results.returncode)
 
 
+def confirm_version_tag_not_present_on_remote() -> None:
+    version = package_version()
+    repo = Repo(os.path.join(PATH_OF_CURRENT_FILE, os.pardir, os.pardir))
+    tags = repo.git.ls_remote("--tags", "origin")
+    split_tags = tags.split("\n")
+    for iter_tag in split_tags:
+        if iter_tag.endswith(f"tags/{version}") or iter_tag.endswith(
+            f"tags/v{version}"
+        ):
+            print(  # allow-print
+                f"Tag for {version} already exists on remote: {iter_tag}"
+            )
+            sys.exit(1)
+
+
 if __name__ == "__main__":
     first_arg = sys.argv[1]
     if first_arg == "package_name":
@@ -66,3 +83,5 @@ if __name__ == "__main__":
         pip_install(test_pypi=True)
     elif first_arg == "install_from_pypi":
         pip_install()
+    elif first_arg == "confirm_version_tag_not_present_on_remote":
+        confirm_version_tag_not_present_on_remote()
