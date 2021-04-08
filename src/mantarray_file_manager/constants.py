@@ -61,6 +61,10 @@ UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID = uuid.UUID(
     "399b2148-09d4-418b-a132-e37df2721938"
 )
 FILE_VERSION_PRIOR_TO_MIGRATION_UUID = uuid.UUID("11b4945b-3cf3-4f67-8bee-7abc3c449756")
+BOOTUP_COUNTER_UUID = uuid.UUID("b9ccc724-a39d-429a-be6d-3fd29be5037d")
+TOTAL_WORKING_HOURS_UUID = uuid.UUID("f8108718-2fa0-40ce-a51a-8478e5edd4b8")
+TAMPER_FLAG_UUID = uuid.UUID("68d0147f-9a84-4423-9c50-228da16ba895")
+PCB_SERIAL_NUMBER_UUID = uuid.UUID("5103f995-19d2-4880-8a2e-2ce9080cd2f5")
 METADATA_UUID_DESCRIPTIONS = immutabledict(
     {
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
@@ -99,6 +103,10 @@ METADATA_UUID_DESCRIPTIONS = immutabledict(
         ORIGINAL_FILE_VERSION_UUID: "The original version of the file when recorded, prior to any migrations to newer versions/formats.",
         UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID: "Timestamp when this file was migrated from an earlier version.",
         FILE_VERSION_PRIOR_TO_MIGRATION_UUID: "File format version that this file was migrated from",
+        BOOTUP_COUNTER_UUID: "The number of times this Mantarray Instrument has booted up",
+        TOTAL_WORKING_HOURS_UUID: "The total number of hours this Mantarray Instrument has been powered on and running",
+        TAMPER_FLAG_UUID: "Is it suspected the internals of the Mantarray enclosure have been tampered with",
+        PCB_SERIAL_NUMBER_UUID: "The serial number of the Mantarray PCB",
     }
 )
 DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
