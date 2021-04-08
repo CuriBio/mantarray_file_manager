@@ -1,7 +1,7 @@
 Changelog for Mantarray File Manager
 ====================================
 
-0.4.7 (2021-04-08)
+0.4.8 (2021-04-08)
 ------------------
 
 - Added the following UUIDs related to the Mantarray Beta 2 metadata:
