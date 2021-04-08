@@ -1,6 +1,17 @@
 Changelog for Mantarray File Manager
 ====================================
 
+0.4.7 (2021-04-08)
+------------------
+
+- Added the following UUIDs related to the Mantarray Beta 2 metadata:
+
+  - Boot-up counter
+  - Total working hours
+  - Tamper flag
+  - PCB serial number
+
+
 0.4.6 (2021-02-05)
 ------------------
 

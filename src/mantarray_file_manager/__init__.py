@@ -9,6 +9,7 @@ from .constants import ADC_REF_OFFSET_UUID
 from .constants import ADC_TISSUE_OFFSET_UUID
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
+from .constants import BOOTUP_COUNTER_UUID
 from .constants import CENTIMILLISECONDS_PER_SECOND
 from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURI_BIO_ACCOUNT_UUID
@@ -29,6 +30,7 @@ from .constants import MICROSECONDS_PER_CENTIMILLISECOND
 from .constants import MIN_SUPPORTED_FILE_VERSION
 from .constants import NOT_APPLICABLE_H5_METADATA
 from .constants import ORIGINAL_FILE_VERSION_UUID
+from .constants import PCB_SERIAL_NUMBER_UUID
 from .constants import PLATE_BARCODE_UUID
 from .constants import REF_SAMPLING_PERIOD_UUID
 from .constants import REFERENCE_SENSOR_READINGS
@@ -37,9 +39,11 @@ from .constants import SLEEP_FIRMWARE_VERSION_UUID
 from .constants import SOFTWARE_BUILD_NUMBER_UUID
 from .constants import SOFTWARE_RELEASE_VERSION_UUID
 from .constants import START_RECORDING_TIME_INDEX_UUID
+from .constants import TAMPER_FLAG_UUID
 from .constants import TISSUE_SAMPLING_PERIOD_UUID
 from .constants import TISSUE_SENSOR_READINGS
 from .constants import TOTAL_WELL_COUNT_UUID
+from .constants import TOTAL_WORKING_HOURS_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_END_UUID
 from .constants import TRIMMED_TIME_FROM_ORIGINAL_START_UUID
 from .constants import USER_ACCOUNT_ID_UUID
@@ -136,4 +140,8 @@ __all__ = [
     "MantarrayFileNotLatestVersionError",
     "TISSUE_SENSOR_READINGS",
     "REFERENCE_SENSOR_READINGS",
+    "BOOTUP_COUNTER_UUID",
+    "TOTAL_WORKING_HOURS_UUID",
+    "TAMPER_FLAG_UUID",
+    "PCB_SERIAL_NUMBER_UUID",
 ]
