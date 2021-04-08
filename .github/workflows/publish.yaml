@@ -61,10 +61,6 @@ jobs:
         run: |
           echo "Version: ${{ steps.extract_version.outputs.package-version }}"
 
-      - name: Confirming tag not already present on remote (if publishing)
-        if: github.event.inputs.publish_to_pypi == '1' && matrix.IS_FASTEST_JOB == true
-        run: python .github/workflows/extract_package_info.py confirm_version_tag_not_present_on_remote
-
       - name: Cache Pre-commit hooks
         uses: actions/cache@v2.1.4
         env:
@@ -119,6 +115,10 @@ jobs:
           pip freeze
       - name: Install Dev Dependencies
         run: pip install -r requirements-dev.txt
+
+      - name: Confirming tag not already present on remote (if publishing)
+        if: github.event.inputs.publish_to_pypi == '1' && matrix.IS_FASTEST_JOB == true
+        run: python .github/workflows/extract_package_info.py confirm_version_tag_not_present_on_remote
 
       - name: Install Main Package
         run: pip install -e .
