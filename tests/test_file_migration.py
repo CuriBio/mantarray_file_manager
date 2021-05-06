@@ -8,7 +8,7 @@ from mantarray_file_manager import BACKEND_LOG_UUID
 from mantarray_file_manager import BARCODE_IS_FROM_SCANNER_UUID
 from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import COMPUTER_NAME_HASH_UUID
-from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
+from mantarray_file_manager import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import FILE_MIGRATION_PATHS
 from mantarray_file_manager import FILE_VERSION_PRIOR_TO_MIGRATION_UUID
 from mantarray_file_manager import file_writer
@@ -52,7 +52,8 @@ def test_migrate_to_next_version__When_invoked_on_a_file_with_no_migration_path_
         PATH_OF_CURRENT_FILE, "h5", "v0.1", "MA20001100__2020_07_15_172203__A4.h5"
     )
     with pytest.raises(
-        UnsupportedFileMigrationPath, match=f"0.1.*{CURRENT_HDF5_FILE_FORMAT_VERSION}"
+        UnsupportedFileMigrationPath,
+        match=f"0.1.*{CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION}",
     ):
         migrate_to_next_version(path_to_0_1_file)
 
@@ -193,5 +194,5 @@ def test_migrate_to_latest_version__When_invoked_on_a_0_3_1_file__Then_the_retur
 
         assert path_to_latest.startswith(tmp_dir)
         latest_file = BasicWellFile(path_to_latest)
-        assert latest_file.get_file_version() == CURRENT_HDF5_FILE_FORMAT_VERSION
+        assert latest_file.get_file_version() == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
         latest_file.get_h5_file().close()

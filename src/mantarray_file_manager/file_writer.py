@@ -18,7 +18,7 @@ import numpy as np
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import COMPUTER_NAME_HASH_UUID
-from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
@@ -49,7 +49,7 @@ class MantarrayH5FileCreator(
     def __init__(
         self,
         file_name: str,
-        file_format_version: str = CURRENT_HDF5_FILE_FORMAT_VERSION,
+        file_format_version: str = CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION,
     ) -> None:
         super().__init__(
             file_name,
@@ -81,7 +81,7 @@ def migrate_to_next_version(
         The path to the H5 file migrated to the next version.
     """
     file_version = _get_format_version_of_file(starting_file_path)
-    if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
+    if file_version == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
         return starting_file_path
     if working_directory is None:
         working_directory = getcwd()
@@ -162,7 +162,7 @@ def migrate_to_latest_version(
     current_file_path = starting_file_path
     while True:
         file_version = _get_format_version_of_file(current_file_path)
-        if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
+        if file_version == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
             return current_file_path
         current_file_path = migrate_to_next_version(
             current_file_path, working_directory=working_directory
@@ -204,7 +204,7 @@ def h5_file_trimmer(
 
     old_file_version = _get_format_version_of_file(file_path)
 
-    if old_file_version != CURRENT_HDF5_FILE_FORMAT_VERSION:
+    if old_file_version != CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
         raise MantarrayFileNotLatestVersionError(old_file_version)
 
     if working_directory is None:

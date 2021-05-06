@@ -14,7 +14,8 @@ from .constants import CENTIMILLISECONDS_PER_SECOND
 from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURI_BIO_ACCOUNT_UUID
 from .constants import CURI_BIO_USER_ACCOUNT_ID
-from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
 from .constants import CUSTOMER_ACCOUNT_ID_UUID
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
@@ -122,7 +123,7 @@ __all__ = [
     "TRIMMED_TIME_FROM_ORIGINAL_START_UUID",
     "TRIMMED_TIME_FROM_ORIGINAL_END_UUID",
     "ORIGINAL_FILE_VERSION_UUID",
-    "CURRENT_HDF5_FILE_FORMAT_VERSION",
+    "CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION",
     "MantarrayH5FileCreator",
     "FILE_MIGRATION_PATHS",
     "migrate_to_next_version",
@@ -144,4 +145,5 @@ __all__ = [
     "TOTAL_WORKING_HOURS_UUID",
     "TAMPER_FLAG_UUID",
     "PCB_SERIAL_NUMBER_UUID",
+    "CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION",
 ]

@@ -5,7 +5,7 @@ from uuid import UUID
 
 from immutable_data_validation import is_uuid
 
-from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
 from .constants import FILE_MIGRATION_PATHS
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MIN_SUPPORTED_FILE_VERSION
@@ -76,5 +76,5 @@ class TooTrimmedError(Exception):
 class MantarrayFileNotLatestVersionError(Exception):
     def __init__(self, file_version: str):
         super().__init__(
-            f"Mantarray files of version {file_version} are not supported. Please migrate to the latest file version {CURRENT_HDF5_FILE_FORMAT_VERSION}"
+            f"Mantarray files of version {file_version} are not supported. Please migrate to the latest file version {CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION}"
         )

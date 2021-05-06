@@ -6,7 +6,7 @@ import tempfile
 from immutable_data_validation.errors import ValidationCollectionMinimumValueError
 from immutable_data_validation.errors import ValidationCollectionNotAnIntegerError
 from mantarray_file_manager import BasicWellFile
-from mantarray_file_manager import CURRENT_HDF5_FILE_FORMAT_VERSION
+from mantarray_file_manager import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MantarrayFileNotLatestVersionError
 from mantarray_file_manager import MantarrayH5FileCreator
@@ -39,7 +39,8 @@ def test_MantarrayH5FileCreator__sets_file_name_and_userblock_size_and_file_vers
         assert test_file.userblock_size == 512
         assert test_file.filename == expected_filename
         assert (
-            test_file.attrs["File Format Version"] == CURRENT_HDF5_FILE_FORMAT_VERSION
+            test_file.attrs["File Format Version"]
+            == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
         )
 
         wf.get_h5_file().close()  # cleanup when running CI on windows systems
