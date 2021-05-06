@@ -316,7 +316,7 @@ def h5_file_trimmer(
     return new_file_name
 
 
-def _find_last_index(from_end: int, old_data: NDArray[(2, Any), int]) -> int:
+def _find_last_index(from_end: int, old_data: NDArray[(Any, Any), int]) -> int:
     last_index = len(old_data[0]) - 1
     time_elapsed = 0
     while last_index > 0 and from_end >= time_elapsed:
