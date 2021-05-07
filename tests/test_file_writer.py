@@ -90,8 +90,9 @@ def test_h5_file_trimmer__When_file_path_isnt_supported__Then_raises_an_error():
         "2020_08_04_build_775",
         "MA20001010__2020_08_04_220041__D6.h5",
     )
-    with pytest.raises(MantarrayFileNotLatestVersionError):
+    with pytest.raises(MantarrayFileNotLatestVersionError) as excinfo:
         h5_file_trimmer(EXPECTED_PATH_D6, from_start=10, from_end=10)
+    assert CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION in str(excinfo.value)
 
 
 def test_h5_file_trimmer__When_invoked_on_a_file__Then_the_new_file_has_old_metadata_except_for_the_three_metadata_pertaining_to_trimming(
