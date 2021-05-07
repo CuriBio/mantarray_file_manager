@@ -76,6 +76,8 @@ class TooTrimmedError(Exception):
 
 
 class MantarrayFileNotLatestVersionError(Exception):
+    """Error raised when a function requiring the latest file format for a specific instrument version is given an old file format."""
+
     def __init__(self, file_version: str):
         is_beta_1_file = file_version.split(".") < VersionInfo.parse(
             CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION

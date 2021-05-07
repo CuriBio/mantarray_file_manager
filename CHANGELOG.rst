@@ -1,6 +1,14 @@
 Changelog for Mantarray File Manager
 ====================================
 
+
+0.5.0 (2021-05-07)
+------------------
+
+- Added support for Beta 2 H5 files.
+- Added initial Beta 2 file version 1.0.0.
+
+
 0.4.8 (2021-04-08)
 ------------------
 
@@ -15,17 +23,19 @@ Changelog for Mantarray File Manager
 0.4.6 (2021-02-05)
 ------------------
 
-- Added file migration function to go from v0.3.1 to v0.4.1 and v0.4.1 to v0.4.2
-- Bumped H5 File version to 0.4.2
-- Added metadata for original file version from Mantarray, file version prior to migration, and time migration was performed
-- Added function ``h5_file_trimmer`` to trim h5 files by indicating the amount of centimilliseconds to be trimmed from the start and end.
+- Added file migration function to go from v0.3.1 to v0.4.1 and v0.4.1 to v0.4.2.
+- Bumped H5 File version to 0.4.2.
+- Added metadata for original file version from Mantarray, file version prior to
+  migration, and time migration was performed.
+- Added function ``h5_file_trimmer`` to trim h5 files by indicating the amount of
+  centimilliseconds to be trimmed from the start and end.
 
 
 0.4.5 (2021-01-13)
 ------------------
 
-- Added UUID indicating whether or not this is an original (untrimmed) file
-- Added UUIDs to track the amount of time trimmed from the file (if trimmed)
+- Added UUID indicating whether or not this is an original (untrimmed) file.
+- Added UUIDs to track the amount of time trimmed from the file (if trimmed).
 
 
 0.4.4 (2021-01-07)
