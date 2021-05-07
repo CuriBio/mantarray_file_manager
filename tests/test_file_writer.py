@@ -263,3 +263,13 @@ def test_h5_file_trimmer__correctly_trims_beta_2_file(current_beta2_version_file
         assert tissue_data[1][-1] == 8
         assert tissue_data[9][0] == 81
         assert tissue_data[9][-1] == 88
+
+        tissue_data = wf.get_raw_reference_reading()
+        assert tissue_data[0][0] == -6120
+        assert tissue_data[0][-1] == 880
+        assert tissue_data[1][0] == 1
+        assert tissue_data[1][-1] == 8
+        assert tissue_data[9][0] == 81
+        assert tissue_data[9][-1] == 88
+
+        wf.get_h5_file().close()  # safe clean-up when running CI on windows systems

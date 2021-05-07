@@ -433,7 +433,9 @@ class WellFile(
         time_delta_centimilliseconds = self._check_for_trimmed_file(
             times[0], time_delta_centimilliseconds
         )
-        return np.concatenate((times + time_delta_centimilliseconds, data), dtype=np.int32)
+        return np.concatenate(  # pylint: disable=unexpected-keyword-arg # Tanner (5/6/21): unsure why pylint thinks dtype is an unexpected kwarg for np.concatenate
+            (times + time_delta_centimilliseconds, data), dtype=np.int32
+        )
 
     def _check_for_trimmed_file(
         self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int
