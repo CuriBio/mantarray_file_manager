@@ -249,7 +249,6 @@ def test_h5_file_trimmer__When_invoked_on_a_trimmed_file__Then_the_new_file_is_a
 
 def test_h5_file_trimmer__correctly_trims_beta_2_file(current_beta2_version_file_path):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        wf = WellFile(current_beta2_version_file_path)
         new_file_path = h5_file_trimmer(current_beta2_version_file_path, tmp_dir, 1000, 1000)
         wf = WellFile(new_file_path)
 
@@ -265,8 +264,8 @@ def test_h5_file_trimmer__correctly_trims_beta_2_file(current_beta2_version_file
         assert tissue_data[9][-1] == 88
 
         tissue_data = wf.get_raw_reference_reading()
-        assert tissue_data[0][0] == -6120
-        assert tissue_data[0][-1] == 880
+        assert tissue_data[0][0] == -6960
+        assert tissue_data[0][-1] == 40
         assert tissue_data[1][0] == 1
         assert tissue_data[1][-1] == 8
         assert tissue_data[9][0] == 81
