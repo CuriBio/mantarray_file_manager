@@ -7,6 +7,7 @@ from immutable_data_validation.errors import ValidationCollectionMinimumValueErr
 from immutable_data_validation.errors import ValidationCollectionNotAnIntegerError
 from mantarray_file_manager import BasicWellFile
 from mantarray_file_manager import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+from mantarray_file_manager import file_writer
 from mantarray_file_manager import IS_FILE_ORIGINAL_UNTRIMMED_UUID
 from mantarray_file_manager import MantarrayFileNotLatestVersionError
 from mantarray_file_manager import MantarrayH5FileCreator
@@ -213,14 +214,12 @@ def test_h5_file_trimmer__When_invoked_on_a_trimmed_file__Then_the_new_file_is_a
     trimmed_file_path,
     mocker,
 ):
-
-    mocked_print = mocker.patch("builtins.print", autospec=True)
-
-    mocked_trimmed_str = "160 centimilliseconds"
+    mocked_print = mocker.patch.object(file_writer, "_print", autospec=True)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         new_file_path = h5_file_trimmer(trimmed_file_path, tmp_dir, 200, 200)
 
+        mocked_trimmed_str = "160 centimilliseconds"
         assert mocked_trimmed_str in mocked_print.call_args_list[0][0][0]
         assert mocked_trimmed_str in mocked_print.call_args_list[1][0][0]
 

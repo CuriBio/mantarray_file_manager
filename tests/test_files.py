@@ -29,6 +29,7 @@ from stdlib_utils import get_current_file_abs_directory
 from .fixtures import fixture_generic_well_file
 from .fixtures import fixture_generic_well_file_0_3_1
 from .fixtures import fixture_generic_well_file_0_3_1__2
+from .fixtures import fixture_generic_well_file_1_0_0
 from .fixtures import fixture_trimmed_file_path
 
 __fixtures__ = (
@@ -36,6 +37,7 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1,
     fixture_generic_well_file_0_3_1__2,
     fixture_trimmed_file_path,
+    fixture_generic_well_file_1_0_0,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -237,6 +239,32 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
     assert arr[1, 0] == -2654995
 
     expected_timestep = 40  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+
+
+def test_WellFile_beta_2__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_1_0_0,
+):
+    arr = generic_well_file_1_0_0.get_raw_tissue_reading()
+    assert arr.shape == (10, 10)
+    assert arr.dtype == np.int32
+    assert arr[1, 0] == 0
+    assert arr[9, 9] == 89
+
+    expected_timestep = 1000  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+
+
+def test_WellFile_beta_2__get_raw_reference_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_1_0_0,
+):
+    arr = generic_well_file_1_0_0.get_raw_reference_reading()
+    assert arr.shape == (10, 10)
+    assert arr.dtype == np.int32
+    assert arr[1, 0] == 0
+    assert arr[9, 9] == 89
+
+    expected_timestep = 1000  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
     assert arr[0, 1] - arr[0, 0] == expected_timestep
 
 
@@ -517,10 +545,11 @@ def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
         )
 
 
-def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
+def test_get_raw_tissue_reading__performance(generic_well_file_0_3_1):
     # start:                        63748857.45
     # remove slow loop:              1382431.61
-    # cache raw tissue reading:        47306.83
+    # *cache raw tissue reading:       47306.83
+    # adding beta 2 support:           59468.82
 
     num_iterations = 100
     start = time.perf_counter_ns()
@@ -532,8 +561,9 @@ def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
     assert dur_per_iter < 10000000
 
 
-def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
-    # start:                           48397.32
+def test_get_raw_reference_reading__performance(generic_well_file_0_3_1):
+    # start (see * above):             48397.32
+    # adding beta 2 support:           59384.57
 
     num_iterations = 100
     start = time.perf_counter_ns()

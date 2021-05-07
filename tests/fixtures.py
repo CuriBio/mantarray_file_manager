@@ -81,3 +81,17 @@ def fixture_generic_well_file_0_3_1__2():
         )
     )
     yield wf
+
+
+@pytest.fixture(scope="function", name="generic_well_file_1_0_0")
+def fixture_generic_well_file_1_0_0():
+    # TODO Tanner (5/6/21): replace this with a real beta 2 file as soon as one is made
+    wf = WellFile(
+        os.path.join(
+            PATH_OF_CURRENT_FILE,
+            "beta_2_h5",
+            "v1.0.0",
+            "dummy.h5",
+        )
+    )
+    yield wf

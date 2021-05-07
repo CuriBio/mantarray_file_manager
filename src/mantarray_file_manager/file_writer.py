@@ -41,6 +41,11 @@ from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
 
+def _print(msg: Any) -> None:
+    # Tanner (5/6/21): some tests need to assert that expected values were printed, so wrapping print in this function this this can be mocked instead of the builtin function. This avoids the issue of print debug statements causing tests to fail that assert print was called with certain args
+    print(msg)  # allow-print
+
+
 class MantarrayH5FileCreator(
     h5py.File
 ):  # pylint: disable=too-many-ancestors # Eli (7/28/20): I don't see a way around this...we need to subclass h5py File
@@ -261,15 +266,12 @@ def h5_file_trimmer(
         old_file_basename = old_file_basename.split("__trimmed")[0]
 
     if actual_start_trimmed != from_start:
-
-        print(  # allow-print
-            f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
+        _print(
+            f"{actual_start_trimmed} centimilliseconds were trimmed from the start instead of {from_start}"
         )
-
     if actual_end_trimmed != from_end:
-
-        print(  # allow-print
-            f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
+        _print(
+            f"{actual_end_trimmed} centimilliseconds were trimmed from the end instead of {from_end}"
         )
 
     # create new file

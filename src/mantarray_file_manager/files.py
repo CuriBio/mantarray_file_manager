@@ -413,14 +413,12 @@ class WellFile(
             self.get_timestamp_of_beginning_of_data_acquisition()
             + datetime.timedelta(microseconds=recording_start_index_useconds)
         )
-
         initial_timestamp = (
             self.get_timestamp_of_first_tissue_data_point()
             if reading_type == TISSUE_SENSOR_READINGS
             else self.get_timestamp_of_first_ref_data_point()
         )
         time_delta = initial_timestamp - timestamp_of_start_index
-
         time_delta_centimilliseconds = int(
             time_delta
             / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
@@ -433,15 +431,20 @@ class WellFile(
         )
         time_step = int(sampling_period / MICROSECONDS_PER_CENTIMILLISECOND)
 
-        data = self._h5_file[reading_type]
-
-        times = np.arange(len(data), dtype=np.int32) * time_step
-
-        time_delta_centimilliseconds = self._check_for_trimmed_file(
-            times, time_delta_centimilliseconds
+        # Tanner (5/6/21): adding `[:]` loads the data as a numpy array giving us more flexibility of multi-dimensional arrays
+        data = self._h5_file[reading_type][:]
+        if len(data.shape) == 1:
+            data = data.reshape(1, data.shape[0])
+        times = (
+            np.mgrid[
+                : data.shape[1],
+            ]
+            * time_step
         )
-
-        return np.array(
+        time_delta_centimilliseconds = self._check_for_trimmed_file(
+            times[0], time_delta_centimilliseconds
+        )
+        return np.concatenate(
             (times + time_delta_centimilliseconds, data),
             dtype=np.int32,
         )
