@@ -110,17 +110,11 @@ def get_specified_files(
         well = WellFile(file)
         if search_criteria == "Well Name" and well.get_well_name() == criteria_value:
             plate_recording_list.append(file)
-        if (
-            search_criteria == "Plate Barcode"
-            and well.get_plate_barcode() == criteria_value
-        ):
+        if search_criteria == "Plate Barcode" and well.get_plate_barcode() == criteria_value:
             plate_recording_list.append(file)
         if search_criteria == "User ID" and well.get_user_account() == criteria_value:
             plate_recording_list.append(file)
-        if (
-            search_criteria == "Account ID"
-            and well.get_customer_account() == criteria_value
-        ):
+        if search_criteria == "Account ID" and well.get_customer_account() == criteria_value:
             plate_recording_list.append(file)
         if (
             search_criteria == "Mantarray Serial Number"
@@ -159,22 +153,20 @@ def _extract_datetime_from_h5(
                 str(metadata_name),
                 file_version,
             )
-            return datetime.datetime.strptime(
-                timestamp_str, DATETIME_STR_FORMAT
-            ).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+                tzinfo=datetime.timezone.utc
+            )
         if metadata_uuid == UTC_FIRST_REF_DATA_POINT_UUID:
             # Tanner (10/5/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
-            metadata_name = (
-                "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
-            )
+            metadata_name = "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
             timestamp_str = _get_file_attr(
                 open_h5_file,
                 str(metadata_name),
                 file_version,
             )
-            return datetime.datetime.strptime(
-                timestamp_str, DATETIME_STR_FORMAT
-            ).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+                tzinfo=datetime.timezone.utc
+            )
 
     timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version)
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
@@ -420,8 +412,7 @@ class WellFile(
         )
         time_delta = initial_timestamp - timestamp_of_start_index
         time_delta_centimilliseconds = int(
-            time_delta
-            / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
+            time_delta / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
         )
 
         sampling_period = (
@@ -435,19 +426,14 @@ class WellFile(
         data = self._h5_file[reading_type][:]
         if len(data.shape) == 1:
             data = data.reshape(1, data.shape[0])
-        times = (
-            np.mgrid[
-                : data.shape[1],
-            ]
-            * time_step
-        )
+        # fmt: off
+        # Tanner (5/6/21): black reformatted this into a very ugly few lines of code
+        times = np.mgrid[: data.shape[1],] * time_step
+        # fmt: on
         time_delta_centimilliseconds = self._check_for_trimmed_file(
             times[0], time_delta_centimilliseconds
         )
-        return np.concatenate(
-            (times + time_delta_centimilliseconds, data),
-            dtype=np.int32,
-        )
+        return np.concatenate((times + time_delta_centimilliseconds, data), dtype=np.int32)
 
     def _check_for_trimmed_file(
         self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int

@@ -18,9 +18,7 @@ PATH_OF_CURRENT_FILE = os.path.dirname((inspect.stack()[0][1]))
 
 
 def _extract_info(regex: Pattern[str]) -> str:
-    with open(
-        os.path.join(PATH_OF_CURRENT_FILE, os.pardir, os.pardir, "setup.py"), "r"
-    ) as in_file:
+    with open(os.path.join(PATH_OF_CURRENT_FILE, os.pardir, os.pardir, "setup.py"), "r") as in_file:
         content = in_file.read()
         match = re.search(regex, content)
         if match is None:
@@ -67,12 +65,8 @@ def confirm_version_tag_not_present_on_remote() -> None:
     tags = repo.git.ls_remote("--tags", "origin")
     split_tags = tags.split("\n")
     for iter_tag in split_tags:
-        if iter_tag.endswith(f"tags/{version}") or iter_tag.endswith(
-            f"tags/v{version}"
-        ):
-            print(  # allow-print
-                f"Tag for {version} already exists on remote: {iter_tag}"
-            )
+        if iter_tag.endswith(f"tags/{version}") or iter_tag.endswith(f"tags/v{version}"):
+            print(f"Tag for {version} already exists on remote: {iter_tag}")  # allow-print
             sys.exit(1)
 
 

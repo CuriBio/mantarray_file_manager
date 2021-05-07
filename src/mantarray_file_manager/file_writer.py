@@ -13,12 +13,12 @@ import uuid
 import h5py
 from immutable_data_validation import validate_int
 from nptyping import NDArray
-import numpy as np
 
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import COMPUTER_NAME_HASH_UUID
 from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
@@ -100,9 +100,7 @@ def migrate_to_next_version(
     new_file_name = os.path.join(
         working_directory, f"{old_file_basename_no_suffix}__v{new_file_version}.h5"
     )
-    new_file = MantarrayH5FileCreator(
-        new_file_name, file_format_version=new_file_version
-    )
+    new_file = MantarrayH5FileCreator(new_file_name, file_format_version=new_file_version)
 
     # old metadata
     old_h5_file = old_file.get_h5_file()
@@ -140,9 +138,7 @@ def migrate_to_next_version(
             (UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID, formatted_time),
         )
     else:
-        raise NotImplementedError(
-            f"Migrating to the version {new_file_version} is not supported."
-        )
+        raise NotImplementedError(f"Migrating to the version {new_file_version} is not supported.")
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
@@ -209,7 +205,10 @@ def h5_file_trimmer(
 
     old_file_version = _get_format_version_of_file(file_path)
 
-    if old_file_version != CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
+    if old_file_version not in (
+        CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION,
+        CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION,
+    ):
         raise MantarrayFileNotLatestVersionError(old_file_version)
 
     if working_directory is None:
@@ -228,19 +227,11 @@ def h5_file_trimmer(
     tissue_data_start_index = find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
-    actual_start_trimmed = (
-        old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
-    )
-    actual_end_trimmed = (
-        tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
-    )
+    actual_start_trimmed = old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
+    actual_end_trimmed = tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
 
-    reference_data_start_index = find_start_index(
-        actual_start_trimmed, old_raw_reference_data[0]
-    )
-    reference_data_last_index = _find_last_index(
-        actual_end_trimmed, old_raw_reference_data
-    )
+    reference_data_start_index = find_start_index(actual_start_trimmed, old_raw_reference_data[0])
+    reference_data_last_index = _find_last_index(actual_end_trimmed, old_raw_reference_data)
 
     if (
         reference_data_start_index >= reference_data_last_index
@@ -298,20 +289,17 @@ def h5_file_trimmer(
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
     # adding new trimmed data
-    new_tissue_sensor_data = old_h5_file[TISSUE_SENSOR_READINGS]
-    new_tissue_sensor_data = np.array(new_tissue_sensor_data)
-    new_tissue_sensor_data = new_tissue_sensor_data[
-        tissue_data_start_index : tissue_data_last_index + 1
-    ]  # +1 because needs to be inclusive of last index
-
-    new_reference_sensor_data = old_h5_file[REFERENCE_SENSOR_READINGS]
-    new_reference_sensor_data = np.array(new_reference_sensor_data)
-    new_reference_sensor_data = new_reference_sensor_data[
-        reference_data_start_index : reference_data_last_index + 1
-    ]  # +1 because needs to be indclusive of last index
-
-    new_file.create_dataset(TISSUE_SENSOR_READINGS, data=new_tissue_sensor_data)
-    new_file.create_dataset(REFERENCE_SENSOR_READINGS, data=new_reference_sensor_data)
+    for reading_type, start_idx, last_idx in (
+        (TISSUE_SENSOR_READINGS, tissue_data_start_index, tissue_data_last_index),
+        (REFERENCE_SENSOR_READINGS, reference_data_start_index, reference_data_last_index),
+    ):
+        data = old_h5_file[reading_type][:]
+        if len(data.shape) == 1:
+            data = data.reshape(1, data.shape[0])
+        trimmed_data = data[
+            :, start_idx : last_idx + 1
+        ]  # +1 because needs to be inclusive of last index
+        new_file.create_dataset(reading_type, data=trimmed_data)
 
     old_h5_file.close()
     new_file.close()
