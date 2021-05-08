@@ -8,7 +8,8 @@ CURI_BIO_ACCOUNT_UUID = uuid.UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")
 CURI_BIO_USER_ACCOUNT_ID = uuid.UUID("455b93eb-c78f-4494-9f73-d3291130f126")
 
 MIN_SUPPORTED_FILE_VERSION = "0.1.1"
-CURRENT_HDF5_FILE_FORMAT_VERSION = "0.4.2"
+CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION = "0.4.2"
+CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION = "1.0.0"
 FILE_FORMAT_VERSION_METADATA_KEY = "File Format Version"
 FILE_MIGRATION_PATHS = immutabledict(
     {
@@ -52,14 +53,10 @@ BACKEND_LOG_UUID = uuid.UUID("87533deb-2495-4430-bce7-12fdfc99158e")
 COMPUTER_NAME_HASH_UUID = uuid.UUID("fefd0675-35c2-45f6-855a-9500ad3f100d")
 BARCODE_IS_FROM_SCANNER_UUID = uuid.UUID("7d026e86-da70-4464-9181-dc0ce2d47bd1")
 IS_FILE_ORIGINAL_UNTRIMMED_UUID = uuid.UUID("52231a24-97a3-497a-917c-86c780d9993f")
-TRIMMED_TIME_FROM_ORIGINAL_START_UUID = uuid.UUID(
-    "371996e6-5e2d-4183-a5cf-06de7058210a"
-)
+TRIMMED_TIME_FROM_ORIGINAL_START_UUID = uuid.UUID("371996e6-5e2d-4183-a5cf-06de7058210a")
 TRIMMED_TIME_FROM_ORIGINAL_END_UUID = uuid.UUID("55f6770d-c369-42ce-a437-5ed89c3cb1f8")
 ORIGINAL_FILE_VERSION_UUID = uuid.UUID("cd1b4063-4a87-4a57-bc12-923ff4890844")
-UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID = uuid.UUID(
-    "399b2148-09d4-418b-a132-e37df2721938"
-)
+UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID = uuid.UUID("399b2148-09d4-418b-a132-e37df2721938")
 FILE_VERSION_PRIOR_TO_MIGRATION_UUID = uuid.UUID("11b4945b-3cf3-4f67-8bee-7abc3c449756")
 BOOTUP_COUNTER_UUID = uuid.UUID("b9ccc724-a39d-429a-be6d-3fd29be5037d")
 TOTAL_WORKING_HOURS_UUID = uuid.UUID("f8108718-2fa0-40ce-a51a-8478e5edd4b8")
@@ -67,6 +64,7 @@ TAMPER_FLAG_UUID = uuid.UUID("68d0147f-9a84-4423-9c50-228da16ba895")
 PCB_SERIAL_NUMBER_UUID = uuid.UUID("5103f995-19d2-4880-8a2e-2ce9080cd2f5")
 METADATA_UUID_DESCRIPTIONS = immutabledict(
     {
+        # General values
         HARDWARE_TEST_RECORDING_UUID: "Is Hardware Test Recording",
         START_RECORDING_TIME_INDEX_UUID: "Timepoint of Beginning of Recording",
         UTC_BEGINNING_DATA_ACQUISTION_UUID: "UTC Timestamp of Beginning of Data Acquisition",
@@ -79,7 +77,6 @@ METADATA_UUID_DESCRIPTIONS = immutabledict(
         SOFTWARE_RELEASE_VERSION_UUID: "Software Release Version",
         MAIN_FIRMWARE_VERSION_UUID: "Firmware Version (Main Controller)",
         SLEEP_FIRMWARE_VERSION_UUID: "Firmware Version (Sleep Mode)",
-        XEM_SERIAL_NUMBER_UUID: "XEM Serial Number",
         MANTARRAY_NICKNAME_UUID: "Mantarray Nickname",
         MANTARRAY_SERIAL_NUMBER_UUID: "Mantarray Serial Number",
         REFERENCE_VOLTAGE_UUID: "Reference Voltage",
@@ -91,8 +88,8 @@ METADATA_UUID_DESCRIPTIONS = immutabledict(
         REF_SAMPLING_PERIOD_UUID: "Reference Sensor Sampling Period (microseconds)",
         TISSUE_SAMPLING_PERIOD_UUID: "Tissue Sensor Sampling Period (microseconds)",
         ADC_GAIN_SETTING_UUID: "ADC Gain Setting",
-        ADC_TISSUE_OFFSET_UUID: "ADC Tissue Sensor Offset",
-        ADC_REF_OFFSET_UUID: "ADC Reference Sensor Offset",
+        ADC_TISSUE_OFFSET_UUID: "ADC Tissue Sensor Offset",  # may not be needed in Beta 2
+        ADC_REF_OFFSET_UUID: "ADC Reference Sensor Offset",  # may not be needed in Beta 2
         PLATE_BARCODE_UUID: "Plate Barcode",
         BACKEND_LOG_UUID: "Backend log file identifier",
         COMPUTER_NAME_HASH_UUID: "SHA512 digest of computer name",
@@ -103,12 +100,16 @@ METADATA_UUID_DESCRIPTIONS = immutabledict(
         ORIGINAL_FILE_VERSION_UUID: "The original version of the file when recorded, prior to any migrations to newer versions/formats.",
         UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID: "Timestamp when this file was migrated from an earlier version.",
         FILE_VERSION_PRIOR_TO_MIGRATION_UUID: "File format version that this file was migrated from",
+        # Beta 1 specific values
+        XEM_SERIAL_NUMBER_UUID: "XEM Serial Number",
+        # Beta 2 specific values
         BOOTUP_COUNTER_UUID: "The number of times this Mantarray Instrument has booted up",
         TOTAL_WORKING_HOURS_UUID: "The total number of hours this Mantarray Instrument has been powered on and running",
         TAMPER_FLAG_UUID: "Is it suspected the internals of the Mantarray enclosure have been tampered with",
         PCB_SERIAL_NUMBER_UUID: "The serial number of the Mantarray PCB",
     }
 )
+
 DATETIME_STR_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 CENTIMILLISECONDS_PER_SECOND = 1e5
 MICROSECONDS_PER_CENTIMILLISECOND = 10

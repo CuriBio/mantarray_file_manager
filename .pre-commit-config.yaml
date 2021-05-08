@@ -67,11 +67,11 @@ repos:
     -   id: check-added-large-files
         name: forbid large files outside tests/h5
         args: ['--maxkb=123']
-        exclude: 'tests/h5'
+        exclude: (tests/h5)|(tests/beta_2_h5)
     -   id: check-added-large-files
         name: forbid very large files inside tests/h5
         args: ['--maxkb=500']
-        files: 'tests/h5'
+        files: (tests/h5)|(tests/beta_2_h5)
     -   id: check-json
     -   id: check-yaml
     -   id: check-xml

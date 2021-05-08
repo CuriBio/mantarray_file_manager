@@ -25,8 +25,8 @@ PATH_TO_GENERIC_0_4_1_FILE = os.path.join(
 )
 
 
-@pytest.fixture(scope="module", name="current_version_file_path")
-def fixture_current_version_file_path():
+@pytest.fixture(scope="module", name="current_beta1_version_file_path")
+def fixture_current_beta1_version_file_path():
     with tempfile.TemporaryDirectory() as tmp_dir:
         file_path = os.path.join(
             PATH_OF_CURRENT_FILE,
@@ -80,4 +80,17 @@ def fixture_generic_well_file_0_3_1__2():
             "MA20123456__2020_08_17_145752__A2.h5",
         )
     )
+    yield wf
+
+
+@pytest.fixture(scope="module", name="current_beta2_version_file_path")
+def fixture_current_beta2_version_file_path():
+    # TODO Tanner (5/6/21): replace this with a real beta 2 file as soon as one is made and update the tests that use this file
+    yield os.path.join(PATH_OF_CURRENT_FILE, "beta_2_h5", "v1.0.0", "dummy.h5")
+
+
+@pytest.fixture(scope="function", name="generic_well_file_1_0_0")
+def fixture_generic_well_file_1_0_0():
+    # TODO see note in fixture above
+    wf = WellFile(os.path.join(PATH_OF_CURRENT_FILE, "beta_2_h5", "v1.0.0", "dummy.h5"))
     yield wf

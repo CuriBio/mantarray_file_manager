@@ -110,17 +110,11 @@ def get_specified_files(
         well = WellFile(file)
         if search_criteria == "Well Name" and well.get_well_name() == criteria_value:
             plate_recording_list.append(file)
-        if (
-            search_criteria == "Plate Barcode"
-            and well.get_plate_barcode() == criteria_value
-        ):
+        if search_criteria == "Plate Barcode" and well.get_plate_barcode() == criteria_value:
             plate_recording_list.append(file)
         if search_criteria == "User ID" and well.get_user_account() == criteria_value:
             plate_recording_list.append(file)
-        if (
-            search_criteria == "Account ID"
-            and well.get_customer_account() == criteria_value
-        ):
+        if search_criteria == "Account ID" and well.get_customer_account() == criteria_value:
             plate_recording_list.append(file)
         if (
             search_criteria == "Mantarray Serial Number"
@@ -159,22 +153,20 @@ def _extract_datetime_from_h5(
                 str(metadata_name),
                 file_version,
             )
-            return datetime.datetime.strptime(
-                timestamp_str, DATETIME_STR_FORMAT
-            ).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+                tzinfo=datetime.timezone.utc
+            )
         if metadata_uuid == UTC_FIRST_REF_DATA_POINT_UUID:
             # Tanner (10/5/20): Early file versions did not include this metadata under a UUID, so we have to use this string identifier instead
-            metadata_name = (
-                "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
-            )
+            metadata_name = "UTC Timestamp of Beginning of Recorded Reference Sensor Data"
             timestamp_str = _get_file_attr(
                 open_h5_file,
                 str(metadata_name),
                 file_version,
             )
-            return datetime.datetime.strptime(
-                timestamp_str, DATETIME_STR_FORMAT
-            ).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
+                tzinfo=datetime.timezone.utc
+            )
 
     timestamp_str = _get_file_attr(open_h5_file, str(metadata_uuid), file_version)
     return datetime.datetime.strptime(timestamp_str, DATETIME_STR_FORMAT).replace(
@@ -318,8 +310,8 @@ class WellFile(
 
     def __init__(self, file_name: str) -> None:
         super().__init__(file_name)
-        self._raw_tissue_reading: Optional[NDArray[(2, Any), int]] = None
-        self._raw_ref_reading: Optional[NDArray[(2, Any), int]] = None
+        self._raw_tissue_reading: Optional[NDArray[(Any, Any), int]] = None
+        self._raw_ref_reading: Optional[NDArray[(Any, Any), int]] = None
 
     def get_unique_recording_key(self) -> Tuple[str, datetime.datetime]:
         barcode = self.get_plate_barcode()
@@ -379,7 +371,7 @@ class WellFile(
             )
         )
 
-    def get_raw_tissue_reading(self) -> NDArray[(2, Any), int]:
+    def get_raw_tissue_reading(self) -> NDArray[(Any, Any), int]:
         """Get a value vs time array.
 
         Time (centi-milliseconds) is first dimension, value is second
@@ -388,42 +380,10 @@ class WellFile(
         Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
         """
         if self._raw_tissue_reading is None:
-            recording_start_index_useconds = (
-                self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
-            )
-            timestamp_of_start_index = (
-                self.get_timestamp_of_beginning_of_data_acquisition()
-                + datetime.timedelta(microseconds=recording_start_index_useconds)
-            )
-            time_delta = (
-                self.get_timestamp_of_first_tissue_data_point()
-                - timestamp_of_start_index
-            )
-            time_delta_centimilliseconds = int(
-                time_delta
-                / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
-            )
-
-            time_step = int(
-                self.get_tissue_sampling_period_microseconds()
-                / MICROSECONDS_PER_CENTIMILLISECOND
-            )
-            tissue_data = self._h5_file[TISSUE_SENSOR_READINGS]
-
-            times = np.arange(len(tissue_data), dtype=np.int32) * time_step
-            len_time = len(times)
-
-            time_delta_centimilliseconds = self._check_for_trimmed_file(
-                times, time_delta_centimilliseconds
-            )
-
-            self._raw_tissue_reading = np.array(
-                (times + time_delta_centimilliseconds, tissue_data[:len_time]),
-                dtype=np.int32,
-            )
+            self._raw_tissue_reading = self._load_reading(TISSUE_SENSOR_READINGS)
         return self._raw_tissue_reading
 
-    def get_raw_reference_reading(self) -> NDArray[(2, Any), int]:
+    def get_raw_reference_reading(self) -> NDArray[(Any, Any), int]:
         """Get a reference value vs time array.
 
         Time (centi-milliseconds) is first dimension, reference value is second
@@ -432,42 +392,50 @@ class WellFile(
         Time is given relative to the start of the recording, so that arrays from different wells can be displayed together
         """
         if self._raw_ref_reading is None:
-            recording_start_index_useconds = (
-                self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
-            )
-            timestamp_of_start_index = (
-                self.get_timestamp_of_beginning_of_data_acquisition()
-                + datetime.timedelta(microseconds=recording_start_index_useconds)
-            )
-            time_delta = (
-                self.get_timestamp_of_first_ref_data_point() - timestamp_of_start_index
-            )
-
-            time_delta_centimilliseconds = int(
-                time_delta
-                / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
-            )
-
-            time_step = int(
-                self.get_reference_sampling_period_microseconds()
-                / MICROSECONDS_PER_CENTIMILLISECOND
-            )
-
-            ref_data = self._h5_file[REFERENCE_SENSOR_READINGS]
-
-            times = np.arange(len(ref_data), dtype=np.int32) * time_step
-            len_time = len(times)
-
-            time_delta_centimilliseconds = self._check_for_trimmed_file(
-                times, time_delta_centimilliseconds
-            )
-
-            self._raw_ref_reading = np.array(
-                (times + time_delta_centimilliseconds, ref_data[:len_time]),
-                dtype=np.int32,
-            )
-
+            self._raw_ref_reading = self._load_reading(REFERENCE_SENSOR_READINGS)
         return self._raw_ref_reading
+
+    def _load_reading(self, reading_type: str) -> NDArray[(Any, Any), int]:
+        if reading_type not in (TISSUE_SENSOR_READINGS, REFERENCE_SENSOR_READINGS):
+            raise NotImplementedError(reading_type)
+        recording_start_index_useconds = (
+            self.get_recording_start_index() * MICROSECONDS_PER_CENTIMILLISECOND
+        )
+        timestamp_of_start_index = (
+            self.get_timestamp_of_beginning_of_data_acquisition()
+            + datetime.timedelta(microseconds=recording_start_index_useconds)
+        )
+        initial_timestamp = (
+            self.get_timestamp_of_first_tissue_data_point()
+            if reading_type == TISSUE_SENSOR_READINGS
+            else self.get_timestamp_of_first_ref_data_point()
+        )
+        time_delta = initial_timestamp - timestamp_of_start_index
+        time_delta_centimilliseconds = int(
+            time_delta / datetime.timedelta(microseconds=MICROSECONDS_PER_CENTIMILLISECOND)
+        )
+
+        sampling_period = (
+            self.get_tissue_sampling_period_microseconds()
+            if reading_type == TISSUE_SENSOR_READINGS
+            else self.get_reference_sampling_period_microseconds()
+        )
+        time_step = int(sampling_period / MICROSECONDS_PER_CENTIMILLISECOND)
+
+        # Tanner (5/6/21): adding `[:]` loads the data as a numpy array giving us more flexibility of multi-dimensional arrays
+        data = self._h5_file[reading_type][:]
+        if len(data.shape) == 1:
+            data = data.reshape(1, data.shape[0])
+        # fmt: off
+        # Tanner (5/6/21): black reformatted this into a very ugly few lines of code
+        times = np.mgrid[: data.shape[1],] * time_step
+        # fmt: on
+        time_delta_centimilliseconds = self._check_for_trimmed_file(
+            times[0], time_delta_centimilliseconds
+        )
+        return np.concatenate(  # pylint: disable=unexpected-keyword-arg # Tanner (5/6/21): unsure why pylint thinks dtype is an unexpected kwarg for np.concatenate
+            (times + time_delta_centimilliseconds, data), dtype=np.int32
+        )
 
     def _check_for_trimmed_file(
         self, times: NDArray[(1, Any), int], time_delta_centimilliseconds: int
@@ -488,12 +456,12 @@ class WellFile(
 
 def find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
     start_index = 0
-    time_elapsed = 0
-    while start_index + 1 < len(old_data) and from_start >= time_elapsed:
-        time_elapsed += old_data[start_index + 1] - old_data[start_index]
-        start_index = start_index + 1
-    start_index = start_index - 1
-    return start_index
+    time_from_start = 0
+    while start_index + 1 < len(old_data) and from_start >= time_from_start:
+        time_from_start = old_data[start_index + 1] - old_data[0]
+        start_index += 1
+    # loop iterates 1 past the desired index, so subtract 1
+    return start_index - 1
 
 
 class WellFile_0_3_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File

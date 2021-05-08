@@ -29,6 +29,7 @@ from stdlib_utils import get_current_file_abs_directory
 from .fixtures import fixture_generic_well_file
 from .fixtures import fixture_generic_well_file_0_3_1
 from .fixtures import fixture_generic_well_file_0_3_1__2
+from .fixtures import fixture_generic_well_file_1_0_0
 from .fixtures import fixture_trimmed_file_path
 
 __fixtures__ = (
@@ -36,6 +37,7 @@ __fixtures__ = (
     fixture_generic_well_file_0_3_1,
     fixture_generic_well_file_0_3_1__2,
     fixture_trimmed_file_path,
+    fixture_generic_well_file_1_0_0,
 )
 PATH_OF_CURRENT_FILE = get_current_file_abs_directory()
 
@@ -240,13 +242,36 @@ def test_WellFile__get_raw_reference_reading__has_correct_time_offset_at_index_0
     assert arr[0, 1] - arr[0, 0] == expected_timestep
 
 
+def test_WellFile_beta_2__get_raw_tissue_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_1_0_0,
+):
+    arr = generic_well_file_1_0_0.get_raw_tissue_reading()
+    assert arr.shape == (10, 10)
+    assert arr.dtype == np.int32
+    assert arr[1, 0] == 0
+    assert arr[9, 9] == 89
+
+    expected_timestep = 1000  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+
+
+def test_WellFile_beta_2__get_raw_reference_reading__has_correct_time_offset_at_index_0(
+    generic_well_file_1_0_0,
+):
+    arr = generic_well_file_1_0_0.get_raw_reference_reading()
+    assert arr.shape == (10, 10)
+    assert arr.dtype == np.int32
+    assert arr[1, 0] == 0
+    assert arr[9, 9] == 89
+
+    expected_timestep = 1000  # future versions of H5 files might not have a method to retrieve the sampling period (because that concept may cease to exist), so here it is hard coded to what the period is for v0.3.1
+    assert arr[0, 1] - arr[0, 0] == expected_timestep
+
+
 def test_WellFile__get_h5_attribute__can_access_arbitrary_metadata(
     generic_well_file_0_3_1,
 ):
-    assert (
-        generic_well_file_0_3_1.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY)
-        == "0.3.1"
-    )
+    assert generic_well_file_0_3_1.get_h5_attribute(FILE_FORMAT_VERSION_METADATA_KEY) == "0.3.1"
 
 
 def test_WellFile__get_h5_file__returns_file_object(generic_well_file_0_3_1):
@@ -310,9 +335,7 @@ def test_WellFile__get_h5_attribute__raises_error_with_unrecognized_UUID__if_UUI
 
 
 def test_PlateRecording__from_directory__creates_a_plate_recording_with_all_h5_files_in_the_directory():
-    pr = PlateRecording.from_directory(
-        os.path.join(PATH_OF_CURRENT_FILE, "h5", "v0.3.1")
-    )
+    pr = PlateRecording.from_directory(os.path.join(PATH_OF_CURRENT_FILE, "h5", "v0.3.1"))
     assert len(pr.get_well_names()) == 24
 
 
@@ -390,9 +413,7 @@ def test_get_files_by_user():
         "User ID", UUID("455b93eb-c78f-4494-9f73-d3291130f126"), unique_files
     )
 
-    assert (
-        len(dictionary["User ID"][UUID("455b93eb-c78f-4494-9f73-d3291130f126")]) == 24
-    )
+    assert len(dictionary["User ID"][UUID("455b93eb-c78f-4494-9f73-d3291130f126")]) == 24
 
 
 def test_get_files_by_account():
@@ -404,10 +425,7 @@ def test_get_files_by_account():
         "Account ID", UUID("73f52be0-368c-42d8-a1fd-660d49ba5604"), unique_files
     )
 
-    assert (
-        len(dictionary["Account ID"][UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")])
-        == 24
-    )
+    assert len(dictionary["Account ID"][UUID("73f52be0-368c-42d8-a1fd-660d49ba5604")]) == 24
 
 
 def test_get_files_by_serial_number():
@@ -415,9 +433,7 @@ def test_get_files_by_serial_number():
         os.path.join(PATH_OF_CURRENT_FILE, "2020_08_04_build_775")
     )
 
-    dictionary = files.get_specified_files(
-        "Mantarray Serial Number", "M02001900", unique_files
-    )
+    dictionary = files.get_specified_files("Mantarray Serial Number", "M02001900", unique_files)
 
     assert len(dictionary["Mantarray Serial Number"]["M02001900"]) == 24
 
@@ -429,9 +445,7 @@ def test_PlateRecording__raises_error_if_files_not_from_same_session(
         WellRecordingsNotFromSameSessionError,
         match=r"'MA20001010'.*2020-08-04 22:01:27.491628\+00:00.*MA20123456.*2020-08-17 14:58:10.728254\+00:00",
     ):
-        PlateRecording(
-            (generic_well_file.get_file_name(), generic_well_file_0_3_1.get_file_name())
-        )
+        PlateRecording((generic_well_file.get_file_name(), generic_well_file_0_3_1.get_file_name()))
 
 
 def test_PlateRecording__can_init_from_filepath_or_wellfile(generic_well_file_0_3_1):
@@ -473,9 +487,7 @@ def test_WellFile__is_backwards_compatible_with_H5_file_v0_1_1():
     assert "M120171010__2020_07_22_201922__A1" in wf.get_file_name()
     assert wf.get_unique_recording_key() == (
         "M120171010",
-        datetime.datetime(
-            2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc
-        ),
+        datetime.datetime(2020, 7, 22, 20, 19, 20 + 15, 328587, tzinfo=datetime.timezone.utc),
     )
     assert wf.get_well_name() == "A1"
     assert wf.get_well_index() == 0
@@ -517,10 +529,11 @@ def test_PlateRecording__init__raises_error_if_given_a_file_with_version_v0_1():
         )
 
 
-def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
+def test_get_raw_tissue_reading__performance(generic_well_file_0_3_1):
     # start:                        63748857.45
     # remove slow loop:              1382431.61
-    # cache raw tissue reading:        47306.83
+    # *cache raw tissue reading:       47306.83
+    # adding beta 2 support:           59468.82
 
     num_iterations = 100
     start = time.perf_counter_ns()
@@ -532,8 +545,9 @@ def test_prof_get_raw_tissue_reading(generic_well_file_0_3_1):
     assert dur_per_iter < 10000000
 
 
-def test_prof_get_raw_reference_reading(generic_well_file_0_3_1):
-    # start:                           48397.32
+def test_get_raw_reference_reading__performance(generic_well_file_0_3_1):
+    # start (see * above):             48397.32
+    # adding beta 2 support:           59384.57
 
     num_iterations = 100
     start = time.perf_counter_ns()

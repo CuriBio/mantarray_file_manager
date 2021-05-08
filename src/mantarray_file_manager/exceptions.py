@@ -4,8 +4,10 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from immutable_data_validation import is_uuid
+from semver import VersionInfo
 
-from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
 from .constants import FILE_MIGRATION_PATHS
 from .constants import METADATA_UUID_DESCRIPTIONS
 from .constants import MIN_SUPPORTED_FILE_VERSION
@@ -74,7 +76,18 @@ class TooTrimmedError(Exception):
 
 
 class MantarrayFileNotLatestVersionError(Exception):
+    """Error raised when a function requiring the latest file format for a specific instrument version is given an old file format."""
+
     def __init__(self, file_version: str):
+        is_beta_1_file = file_version.split(".") < VersionInfo.parse(
+            CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
+        )
+        latest_file_version = (
+            CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+            if is_beta_1_file
+            else CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
+        )
+        file_type = "Beta 1" if is_beta_1_file else "Beta 2"
         super().__init__(
-            f"Mantarray files of version {file_version} are not supported. Please migrate to the latest file version {CURRENT_HDF5_FILE_FORMAT_VERSION}"
+            f"Mantarray {file_type} files of version {file_version} are not supported. Please migrate to the latest file version for Mantarray {file_type} data: {latest_file_version}"
         )

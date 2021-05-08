@@ -13,12 +13,12 @@ import uuid
 import h5py
 from immutable_data_validation import validate_int
 from nptyping import NDArray
-import numpy as np
 
 from .constants import BACKEND_LOG_UUID
 from .constants import BARCODE_IS_FROM_SCANNER_UUID
 from .constants import COMPUTER_NAME_HASH_UUID
-from .constants import CURRENT_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION
+from .constants import CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION
 from .constants import DATETIME_STR_FORMAT
 from .constants import FILE_FORMAT_VERSION_METADATA_KEY
 from .constants import FILE_MIGRATION_PATHS
@@ -41,6 +41,11 @@ from .files import WELL_FILE_CLASSES
 from .files import WellFile
 
 
+def _print(msg: Any) -> None:
+    # Tanner (5/6/21): some tests need to assert that expected values were printed, so wrapping print in this function this this can be mocked instead of the builtin function. This avoids the issue of print debug statements causing tests to fail that assert print was called with certain args
+    print(msg)  # allow-print
+
+
 class MantarrayH5FileCreator(
     h5py.File
 ):  # pylint: disable=too-many-ancestors # Eli (7/28/20): I don't see a way around this...we need to subclass h5py File
@@ -49,7 +54,7 @@ class MantarrayH5FileCreator(
     def __init__(
         self,
         file_name: str,
-        file_format_version: str = CURRENT_HDF5_FILE_FORMAT_VERSION,
+        file_format_version: str = CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION,
     ) -> None:
         super().__init__(
             file_name,
@@ -81,7 +86,7 @@ def migrate_to_next_version(
         The path to the H5 file migrated to the next version.
     """
     file_version = _get_format_version_of_file(starting_file_path)
-    if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
+    if file_version == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
         return starting_file_path
     if working_directory is None:
         working_directory = getcwd()
@@ -95,9 +100,7 @@ def migrate_to_next_version(
     new_file_name = os.path.join(
         working_directory, f"{old_file_basename_no_suffix}__v{new_file_version}.h5"
     )
-    new_file = MantarrayH5FileCreator(
-        new_file_name, file_format_version=new_file_version
-    )
+    new_file = MantarrayH5FileCreator(new_file_name, file_format_version=new_file_version)
 
     # old metadata
     old_h5_file = old_file.get_h5_file()
@@ -135,9 +138,7 @@ def migrate_to_next_version(
             (UTC_TIMESTAMP_OF_FILE_VERSION_MIGRATION_UUID, formatted_time),
         )
     else:
-        raise NotImplementedError(
-            f"Migrating to the version {new_file_version} is not supported."
-        )
+        raise NotImplementedError(f"Migrating to the version {new_file_version} is not supported.")
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
 
@@ -159,10 +160,11 @@ def migrate_to_latest_version(
     Returns:
         The path to the final H5 file migrated to the latest version.
     """
+    # TODO Tanner (5/7/21): add beta 2 file support once needed
     current_file_path = starting_file_path
     while True:
         file_version = _get_format_version_of_file(current_file_path)
-        if file_version == CURRENT_HDF5_FILE_FORMAT_VERSION:
+        if file_version == CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION:
             return current_file_path
         current_file_path = migrate_to_next_version(
             current_file_path, working_directory=working_directory
@@ -189,29 +191,21 @@ def h5_file_trimmer(
         The path to the trimmed H5 file. The amount actually trimmed off the file is dependent on the timepoints of the tissue sensor data and will be reflected in the new file name, message to the terminal, and the metadata. If the amount to be trimmed off is in between two time points, less time will be trimmed off and the lower timepoint will be used if from_start or upper timepoint if from_last. Reference sensor readings are trimmed according to the amount trimmed from tissue data.
     """
     # pylint: disable-msg=too-many-locals # Anna (1/27/20) many local variables are needed throughout the method
-    validate_int(
-        value=from_start,
-        allow_null=True,
-        minimum=0,
-    )
+    validate_int(value=from_start, allow_null=True, minimum=0)
     validate_int(value=from_end, allow_null=True, minimum=0)
 
     if from_start == 0 and from_end == 0:
         raise UnsupportedArgumentError()
-
     if from_end is None or from_start is None:
         raise UnsupportedArgumentError()
 
     old_file_version = _get_format_version_of_file(file_path)
-
-    if old_file_version != CURRENT_HDF5_FILE_FORMAT_VERSION:
+    if old_file_version not in (
+        CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION,
+        CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION,
+    ):
         raise MantarrayFileNotLatestVersionError(old_file_version)
-
-    if working_directory is None:
-        working_directory = getcwd()
-
     old_file = WellFile(file_path)
-    old_file_basename = ntpath.basename(file_path)[:-3]
 
     # finding amount to trim
     old_raw_reference_data = old_file.get_raw_reference_reading()
@@ -219,104 +213,85 @@ def h5_file_trimmer(
 
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
-    total_time = tissue_data_last_val - tissue_data_start_val
     tissue_data_start_index = find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
-    actual_start_trimmed = (
-        old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
-    )
-    actual_end_trimmed = (
-        tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
-    )
-
-    reference_data_start_index = find_start_index(
-        actual_start_trimmed, old_raw_reference_data[0]
-    )
-    reference_data_last_index = _find_last_index(
-        actual_end_trimmed, old_raw_reference_data
-    )
-
+    actual_start_trimmed = old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
+    if actual_start_trimmed != from_start:
+        _print(
+            f"{actual_start_trimmed} centimilliseconds were trimmed from the start instead of {from_start}"
+        )
+    actual_end_trimmed = tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
+    if actual_end_trimmed != from_end:
+        _print(
+            f"{actual_end_trimmed} centimilliseconds were trimmed from the end instead of {from_end}"
+        )
+    reference_data_start_index = find_start_index(actual_start_trimmed, old_raw_reference_data[0])
+    reference_data_last_index = _find_last_index(actual_end_trimmed, old_raw_reference_data)
     if (
         reference_data_start_index >= reference_data_last_index
         or tissue_data_start_index >= tissue_data_last_index
     ):
+        total_time = tissue_data_last_val - tissue_data_start_val
         raise TooTrimmedError(from_start, from_end, total_time)
 
     # old metadata
+    old_file_basename = ntpath.basename(file_path)[:-3]
     old_h5_file = old_file.get_h5_file()
     old_metadata_keys = set(old_h5_file.attrs.keys())
     old_from_end = 0
     old_from_start = 0
     is_untrimmed = old_h5_file.attrs[str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)]
-
     if not is_untrimmed:
         old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
         old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
-
+        # these metadata keys will be different in new file, so don't need to copy
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
         old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
 
         old_file_basename = old_file_basename.split("__trimmed")[0]
 
-    if actual_start_trimmed != from_start:
-
-        print(  # allow-print
-            f"{actual_start_trimmed} centimilliseconds was trimmed from the start instead of {from_start}"
-        )
-
-    if actual_end_trimmed != from_end:
-
-        print(  # allow-print
-            f"{actual_end_trimmed} centimilliseconds was trimmed from the end instead of {from_end}"
-        )
-
     # create new file
+    if working_directory is None:
+        working_directory = getcwd()
     new_file_name = os.path.join(
         working_directory,
         f"{old_file_basename}__trimmed_{actual_start_trimmed + old_from_start}_{actual_end_trimmed + old_from_end}.h5",
     )
-
     new_file = MantarrayH5FileCreator(new_file_name)
-
+    # add old metadata
     for iter_metadata_key in old_metadata_keys:
         new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
-
-    # new metadata
+    # add new metadata
     metadata_to_create: Tuple[Tuple[uuid.UUID, Union[str, bool, int, float]], ...]
-
     metadata_to_create = (
         (IS_FILE_ORIGINAL_UNTRIMMED_UUID, False),
         (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, actual_start_trimmed + old_from_start),
         (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, actual_end_trimmed + old_from_end),
     )
-
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
+    # add trimmed data
+    for reading_type, start_idx, last_idx in (
+        (TISSUE_SENSOR_READINGS, tissue_data_start_index, tissue_data_last_index),
+        (REFERENCE_SENSOR_READINGS, reference_data_start_index, reference_data_last_index),
+    ):
+        data = old_h5_file[reading_type][:]
+        if len(data.shape) == 1:
+            data = data.reshape(1, data.shape[0])
+        trimmed_data = data[
+            :, start_idx : last_idx + 1
+        ]  # +1 because needs to be inclusive of last index
+        new_file.create_dataset(reading_type, data=trimmed_data)
 
-    # adding new trimmed data
-    new_tissue_sensor_data = old_h5_file[TISSUE_SENSOR_READINGS]
-    new_tissue_sensor_data = np.array(new_tissue_sensor_data)
-    new_tissue_sensor_data = new_tissue_sensor_data[
-        tissue_data_start_index : tissue_data_last_index + 1
-    ]  # +1 because needs to be inclusive of last index
-
-    new_reference_sensor_data = old_h5_file[REFERENCE_SENSOR_READINGS]
-    new_reference_sensor_data = np.array(new_reference_sensor_data)
-    new_reference_sensor_data = new_reference_sensor_data[
-        reference_data_start_index : reference_data_last_index + 1
-    ]  # +1 because needs to be indclusive of last index
-
-    new_file.create_dataset(TISSUE_SENSOR_READINGS, data=new_tissue_sensor_data)
-    new_file.create_dataset(REFERENCE_SENSOR_READINGS, data=new_reference_sensor_data)
-
+    # close both files to avoid corruption
     old_h5_file.close()
     new_file.close()
     return new_file_name
 
 
-def _find_last_index(from_end: int, old_data: NDArray[(2, Any), int]) -> int:
+def _find_last_index(from_end: int, old_data: NDArray[(Any, Any), int]) -> int:
     last_index = len(old_data[0]) - 1
     time_elapsed = 0
     while last_index > 0 and from_end >= time_elapsed:
