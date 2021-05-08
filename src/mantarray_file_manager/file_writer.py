@@ -160,6 +160,7 @@ def migrate_to_latest_version(
     Returns:
         The path to the final H5 file migrated to the latest version.
     """
+    # TODO Tanner (5/7/21): add beta 2 file support once needed
     current_file_path = starting_file_path
     while True:
         file_version = _get_format_version_of_file(current_file_path)
@@ -190,32 +191,21 @@ def h5_file_trimmer(
         The path to the trimmed H5 file. The amount actually trimmed off the file is dependent on the timepoints of the tissue sensor data and will be reflected in the new file name, message to the terminal, and the metadata. If the amount to be trimmed off is in between two time points, less time will be trimmed off and the lower timepoint will be used if from_start or upper timepoint if from_last. Reference sensor readings are trimmed according to the amount trimmed from tissue data.
     """
     # pylint: disable-msg=too-many-locals # Anna (1/27/20) many local variables are needed throughout the method
-    validate_int(
-        value=from_start,
-        allow_null=True,
-        minimum=0,
-    )
+    validate_int(value=from_start, allow_null=True, minimum=0)
     validate_int(value=from_end, allow_null=True, minimum=0)
 
     if from_start == 0 and from_end == 0:
         raise UnsupportedArgumentError()
-
     if from_end is None or from_start is None:
         raise UnsupportedArgumentError()
 
     old_file_version = _get_format_version_of_file(file_path)
-
     if old_file_version not in (
         CURRENT_BETA1_HDF5_FILE_FORMAT_VERSION,
         CURRENT_BETA2_HDF5_FILE_FORMAT_VERSION,
     ):
         raise MantarrayFileNotLatestVersionError(old_file_version)
-
-    if working_directory is None:
-        working_directory = getcwd()
-
     old_file = WellFile(file_path)
-    old_file_basename = ntpath.basename(file_path)[:-3]
 
     # finding amount to trim
     old_raw_reference_data = old_file.get_raw_reference_reading()
@@ -223,72 +213,66 @@ def h5_file_trimmer(
 
     tissue_data_start_val = old_tissue_data[0][0]
     tissue_data_last_val = old_tissue_data[0][-1]
-    total_time = tissue_data_last_val - tissue_data_start_val
     tissue_data_start_index = find_start_index(from_start, old_tissue_data[0])
     tissue_data_last_index = _find_last_index(from_end, old_tissue_data)
 
     actual_start_trimmed = old_tissue_data[0][tissue_data_start_index] - tissue_data_start_val
+    if actual_start_trimmed != from_start:
+        _print(
+            f"{actual_start_trimmed} centimilliseconds were trimmed from the start instead of {from_start}"
+        )
     actual_end_trimmed = tissue_data_last_val - old_tissue_data[0][tissue_data_last_index]
-
+    if actual_end_trimmed != from_end:
+        _print(
+            f"{actual_end_trimmed} centimilliseconds were trimmed from the end instead of {from_end}"
+        )
     reference_data_start_index = find_start_index(actual_start_trimmed, old_raw_reference_data[0])
     reference_data_last_index = _find_last_index(actual_end_trimmed, old_raw_reference_data)
-
     if (
         reference_data_start_index >= reference_data_last_index
         or tissue_data_start_index >= tissue_data_last_index
     ):
+        total_time = tissue_data_last_val - tissue_data_start_val
         raise TooTrimmedError(from_start, from_end, total_time)
 
     # old metadata
+    old_file_basename = ntpath.basename(file_path)[:-3]
     old_h5_file = old_file.get_h5_file()
     old_metadata_keys = set(old_h5_file.attrs.keys())
     old_from_end = 0
     old_from_start = 0
     is_untrimmed = old_h5_file.attrs[str(IS_FILE_ORIGINAL_UNTRIMMED_UUID)]
-
     if not is_untrimmed:
         old_from_start = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID)]
         old_from_end = old_h5_file.attrs[str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID)]
-
+        # these metadata keys will be different in new file, so don't need to copy
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_START_UUID))
         old_metadata_keys.remove(str(TRIMMED_TIME_FROM_ORIGINAL_END_UUID))
         old_metadata_keys.remove(str(IS_FILE_ORIGINAL_UNTRIMMED_UUID))
 
         old_file_basename = old_file_basename.split("__trimmed")[0]
 
-    if actual_start_trimmed != from_start:
-        _print(
-            f"{actual_start_trimmed} centimilliseconds were trimmed from the start instead of {from_start}"
-        )
-    if actual_end_trimmed != from_end:
-        _print(
-            f"{actual_end_trimmed} centimilliseconds were trimmed from the end instead of {from_end}"
-        )
-
     # create new file
+    if working_directory is None:
+        working_directory = getcwd()
     new_file_name = os.path.join(
         working_directory,
         f"{old_file_basename}__trimmed_{actual_start_trimmed + old_from_start}_{actual_end_trimmed + old_from_end}.h5",
     )
-
     new_file = MantarrayH5FileCreator(new_file_name)
-
+    # add old metadata
     for iter_metadata_key in old_metadata_keys:
         new_file.attrs[iter_metadata_key] = old_h5_file.attrs[iter_metadata_key]
-
-    # new metadata
+    # add new metadata
     metadata_to_create: Tuple[Tuple[uuid.UUID, Union[str, bool, int, float]], ...]
-
     metadata_to_create = (
         (IS_FILE_ORIGINAL_UNTRIMMED_UUID, False),
         (TRIMMED_TIME_FROM_ORIGINAL_START_UUID, actual_start_trimmed + old_from_start),
         (TRIMMED_TIME_FROM_ORIGINAL_END_UUID, actual_end_trimmed + old_from_end),
     )
-
     for iter_metadata_key, iter_metadata_value in metadata_to_create:
         new_file.attrs[str(iter_metadata_key)] = iter_metadata_value
-
-    # adding new trimmed data
+    # add trimmed data
     for reading_type, start_idx, last_idx in (
         (TISSUE_SENSOR_READINGS, tissue_data_start_index, tissue_data_last_index),
         (REFERENCE_SENSOR_READINGS, reference_data_start_index, reference_data_last_index),
@@ -301,6 +285,7 @@ def h5_file_trimmer(
         ]  # +1 because needs to be inclusive of last index
         new_file.create_dataset(reading_type, data=trimmed_data)
 
+    # close both files to avoid corruption
     old_h5_file.close()
     new_file.close()
     return new_file_name

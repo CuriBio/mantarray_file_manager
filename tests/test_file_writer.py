@@ -49,6 +49,15 @@ def test_MantarrayH5FileCreator__sets_file_name_and_userblock_size_and_file_vers
         wf.get_h5_file().close()  # cleanup when running CI on windows systems
 
 
+def test_h5_file_trimmer__uses_cwd_when_a_file_dir_is_not_specified(
+    current_beta1_version_file_path, mocker
+):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        mocker.patch.object(file_writer, "getcwd", autospec=True, return_value=tmp_dir)
+        new_file_path = h5_file_trimmer(current_beta1_version_file_path, from_start=1)
+        assert tmp_dir in new_file_path
+
+
 def test_h5_file_trimmer__When_start_arg_is_negative__Then_raises_an_error(
     current_beta1_version_file_path,
 ):

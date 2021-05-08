@@ -456,12 +456,12 @@ class WellFile(
 
 def find_start_index(from_start: int, old_data: NDArray[(1, Any), int]) -> int:
     start_index = 0
-    time_elapsed = 0
-    while start_index + 1 < len(old_data) and from_start >= time_elapsed:
-        time_elapsed += old_data[start_index + 1] - old_data[start_index]
-        start_index = start_index + 1
-    start_index = start_index - 1
-    return start_index
+    time_from_start = 0
+    while start_index + 1 < len(old_data) and from_start >= time_from_start:
+        time_from_start = old_data[start_index + 1] - old_data[0]
+        start_index += 1
+    # loop iterates 1 past the desired index, so subtract 1
+    return start_index - 1
 
 
 class WellFile_0_3_1(  # pylint:disable=invalid-name,too-many-ancestors # Eli (1/18/21): this seems like a good way to specifically name these historical class objects. I don't see a way around this ancestor issue...we need to subclass h5py File
